@@ -1,0 +1,180 @@
+// Prisma schema — AI Court Judgment Summarizer
+// Provider: SQLite  (file-based, no server required)
+// Run:  npx prisma migrate dev --name init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Users ──────────────────────────────────────────────────────────────────
+// SQLite has no native ENUM type. Prisma stores them as plain String columns
+// with application-level validation.
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  // role values: JUDGE | ADVOCATE | COURT_STAFF | RESEARCHER | ADMIN
+  role      String   @default("ADVOCATE")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cases    Case[]
+  hearings Hearing[]
+
+  @@index([email])
+  @@map("users")
+}
+
+// ─── Cases ──────────────────────────────────────────────────────────────────
+// status values: PENDING | PROCESSING | COMPLETED | FAILED
+
+model Case {
+  id           String    @id @default(cuid())
+  title        String
+  caseNumber   String    @unique
+  court        String?
+  judgmentDate DateTime?
+  caseType     String?
+  // status values: PENDING | PROCESSING | COMPLETED | FAILED
+  status       String    @default("PENDING")
+
+  // Raw text extracted from the uploaded PDF (by pdf-parse or OCR)
+  extractedText String?
+
+  // PDF file reference
+  pdfUrl      String?
+  pdfFileName String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  documents  Document[]
+  summary    Summary?
+  citations  Citation[]
+  hearings   Hearing[]
+  embeddings CaseEmbedding[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([caseNumber])
+  @@map("cases")
+}
+
+// ─── Documents ───────────────────────────────────────────────────────────────
+// Stores uploaded PDF/document metadata for a case.
+
+model Document {
+  id        String   @id @default(cuid())
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  fileName      String
+  fileSize      Int?       // bytes
+  mimeType      String?
+  storagePath   String     // local path or future cloud URL
+  extractedText String?    // text extracted from this specific file
+
+  createdAt DateTime @default(now())
+
+  @@index([caseId])
+  @@map("documents")
+}
+
+// ─── AI Summaries ────────────────────────────────────────────────────────────
+
+model Summary {
+  id     String @id @default(cuid())
+  caseId String @unique
+  case   Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  briefFacts   String?
+  issuesRaised String?
+  arguments    String?
+  judgment     String?
+  keyPoints    String?
+
+  // Gemini text embedding stored as a JSON-serialised float array
+  // e.g. JSON.stringify([0.123, -0.456, ...])
+  embedding String?
+
+  generatedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  model       String   @default("gemini-1.5-flash")
+
+  @@map("summaries")
+}
+
+// ─── Legal Citations ─────────────────────────────────────────────────────────
+
+model Citation {
+  id     String @id @default(cuid())
+  caseId String
+  case   Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  citation String  // e.g. "AIR 1983 SC 1086"
+  // type values: "case_law" | "statute" | "section"
+  type     String?
+  context  String?
+
+  createdAt DateTime @default(now())
+
+  @@index([caseId])
+  @@map("citations")
+}
+
+// ─── Hearings ────────────────────────────────────────────────────────────────
+// status values: SCHEDULED | COMPLETED | ADJOURNED | CANCELLED
+
+model Hearing {
+  id     String @id @default(cuid())
+  caseId String
+  case   Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date     DateTime
+  time     String?
+  location String?
+  notes    String?
+  // status values: SCHEDULED | COMPLETED | ADJOURNED | CANCELLED
+  status   String   @default("SCHEDULED")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([caseId])
+  @@index([userId])
+  @@index([date])
+  @@map("hearings")
+}
+
+// ─── Case Embeddings ─────────────────────────────────────────────────────────
+// Stores chunked embeddings for semantic / similar-judgment search.
+// Each row = one text chunk from a case + its float-array embedding.
+
+model CaseEmbedding {
+  id     String @id @default(cuid())
+  caseId String
+  case   Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  chunkIndex Int     // order of chunk within the document
+  chunkText  String  // the raw text slice
+  // JSON-serialised float array: JSON.stringify(number[])
+  vector     String
+
+  createdAt DateTime @default(now())
+
+  @@index([caseId])
+  @@map("case_embeddings")
+}
