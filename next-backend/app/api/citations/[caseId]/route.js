@@ -120,14 +120,15 @@ function extractCitationsFromText(text) {
       const end = Math.min(text.length, match.index + citation.length + 60)
       let context = text.slice(start, end).replace(/\s+/g, ' ').trim()
 
-      // If context starts mid-word, trim to the nearest space
-      if (start > 0 && context.length > 0 && text[start] !== ' ') {
-        const spaceIdx = context.indexOf(' ')
-        if (spaceIdx > 0) context = '…' + context.slice(spaceIdx)
-      }
-      if (end < text.length && context.length > 0) {
-        context = context + '…'
-      }
+      // Start and end the snippet on whole words (no "…" dots)
+      if (start > 0) context = context.replace(/^\S*\s/, '')
+      if (end < text.length) context = context.replace(/\s\S*$/, '')
+
+      // Remove page footers like "Criminal Appeal No. 4277 of 2024Page 4 of 13"
+      context = context
+        .replace(/[A-Za-z. ]*No\.\s*\d+\s*of\s*\d{4}\s*Page\s*\d+\s*of\s*\d+/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
 
       results.push({ citation, type, context: context.slice(0, 300) })
     }
