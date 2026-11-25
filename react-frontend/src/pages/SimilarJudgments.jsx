@@ -5,12 +5,14 @@ import api from '../services/api.js'
 // Badge style map for citation types
 const TYPE_BADGE = {
   case_law: 'badge-blue',
+  case_name: 'badge-blue',
   statute:  'badge-green',
   section:  'badge-yellow',
 }
 
 const TYPE_LABEL = {
   case_law: '⚖️ Case Law',
+  case_name: '⚖️ Case Law',
   statute:  '📜 Statute / Act',
   section:  '§ Section / Article',
 }

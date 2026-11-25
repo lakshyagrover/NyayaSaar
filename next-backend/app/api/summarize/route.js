@@ -420,12 +420,14 @@ export async function POST(request) {
     const newCitations = aiCitations
       .filter((c) => typeof c === 'string' && c.trim().length > 3)
       .map((c) => c.trim())
+      // only case names like "X v. Y" - sections and Acts are found by Extract Citations
+      .filter((c) => /\s(v|vs)\.?\s/i.test(c))
       .filter((c) => lowerText.includes(squeeze(c)) && !existing.has(c.toLowerCase()))
       .slice(0, 10)
 
     if (newCitations.length > 0) {
       await prisma.citation.createMany({
-        data: newCitations.map((c) => ({ caseId, citation: c, type: 'ai_detected', context: null })),
+        data: newCitations.map((c) => ({ caseId, citation: c, type: 'case_name', context: null })),
       })
     }
 

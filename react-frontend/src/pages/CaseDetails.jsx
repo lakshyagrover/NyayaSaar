@@ -515,20 +515,34 @@ export default function CaseDetails() {
             <p className="text-xs text-gray-500">Loading citations…</p>
           </div>
         ) : citations?.citations?.length > 0 ? (
-          <div className="divide-y divide-gray-100">
-            {citations.citations.map((c, idx) => (
-              <div key={c.id || idx} className="py-2.5 flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 font-mono break-words">{c.citation}</p>
-                  {c.context && (
-                    <p className="text-xs text-gray-500 mt-0.5 italic">{c.context}</p>
-                  )}
+          <div className="space-y-4">
+            {[
+              { label: '⚖️ Cases Cited', types: ['case_law', 'case_name'] },
+              { label: '📕 Acts & Statutes', types: ['statute'] },
+              { label: '§ Sections & Articles', types: ['section'] },
+            ].map((group) => {
+              const items = citations.citations.filter((c) => group.types.includes(c.type))
+              if (items.length === 0) return null
+              return (
+                <div key={group.label}>
+                  <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
+                    {group.label} ({items.length})
+                  </p>
+                  <div className="divide-y divide-gray-100">
+                    {items.map((c, idx) => (
+                      <div key={c.id || idx} className="py-2">
+                        <p className="text-sm font-semibold text-gray-900 break-words">{c.citation}</p>
+                        {c.context && (
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            <span className="font-medium">Where it appears:</span> {c.context}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <span className="badge badge-gray text-[10px] uppercase tracking-wider shrink-0">
-                  {c.type || 'citation'}
-                </span>
-              </div>
-            ))}
+              )
+            })}
           </div>
         ) : (
           <div className="text-center py-8">

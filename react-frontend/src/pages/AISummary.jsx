@@ -384,7 +384,7 @@ export default function AISummary() {
                       )}
                     </div>
                     <span className="badge badge-gray text-[10px] uppercase tracking-wider shrink-0">
-                      {c.type || 'case_law'}
+                      {{ case_law: 'Case', case_name: 'Case', statute: 'Act', section: 'Section' }[c.type] || 'Citation'}
                     </span>
                   </div>
                 ))}

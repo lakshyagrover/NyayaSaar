@@ -104,7 +104,8 @@ function extractCitationsFromText(text) {
 
     let match
     while ((match = regex.exec(text)) !== null) {
-      const citation = match[0].replace(/\s+/g, ' ').trim()
+      // remove extra spaces and a leading "the " ("the Prevention of Corruption Act, 1988")
+      const citation = match[0].replace(/\s+/g, ' ').trim().replace(/^the\s+/i, '')
 
       // Skip very short or generic matches that aren't real citations
       if (citation.length < 6) continue
@@ -256,7 +257,11 @@ async function runExtraction(caseRecord) {
   // Idempotent: delete old regex citations and re-insert fresh results.
   // Citations found by the AI summary (type 'ai_detected') are kept.
   await prisma.$transaction(async (tx) => {
-    await tx.citation.deleteMany({ where: { caseId: caseRecord.id, NOT: { type: 'ai_detected' } } })
+    // Delete old citations. Keep only case NAMES found by the AI (e.g. "X v. Y"),
+    // because the patterns below can only find report numbers like "(2018) 15 SCC 139".
+    await tx.citation.deleteMany({
+      where: { caseId: caseRecord.id, NOT: { type: 'case_name' } },
+    })
 
     if (extracted.length > 0) {
       await tx.citation.createMany({
