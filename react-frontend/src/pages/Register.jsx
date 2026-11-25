@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
+import AuthLayout from '../components/layout/AuthLayout.jsx'
 
 const ROLES = ['Judge', 'Advocate', 'Court Staff', 'Researcher']
 
@@ -28,15 +29,9 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-court-cream flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-court-navy">NyayaSaar</h1>
-          <p className="mt-2 text-gray-500 text-sm">Create your account</p>
-        </div>
-
-        <div className="card">
-          <h2 className="text-xl font-semibold text-gray-800 mb-6">Register</h2>
+    <AuthLayout>
+      <div>
+          <h2 className="text-2xl font-bold text-court-navy mb-6">Register</h2>
 
           {error && (
             <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
@@ -80,7 +75,6 @@ export default function Register() {
             <Link to="/login" className="font-medium text-primary-700 hover:underline">Sign in</Link>
           </p>
         </div>
-      </div>
-    </div>
+    </AuthLayout>
   )
 }

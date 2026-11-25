@@ -137,10 +137,9 @@ export default function Dashboard() {
           </div>
 
           {cases.length === 0 ? (
-            <div className="text-center py-12 rounded-xl border-2 border-dashed border-primary-100">
-              <p className="text-3xl">📄</p>
-              <p className="text-sm text-gray-600 mt-2">No cases yet</p>
-              <Link to="/upload" className="btn-primary mt-4 inline-flex">Upload your first judgment</Link>
+            <div className="flex items-center justify-between gap-4 py-2">
+              <p className="text-sm text-gray-600">No cases yet</p>
+              <Link to="/upload" className="btn-primary shrink-0">Upload your first judgment</Link>
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
@@ -159,9 +158,9 @@ export default function Dashboard() {
                       {c.caseNumber} · {c.court || 'Court not specified'}
                     </p>
                   </div>
-                  <span className="hidden sm:inline badge badge-gray shrink-0">{c.caseType || 'Other'}</span>
-                  <span className={`badge shrink-0 ${c.summary ? 'bg-primary-100 text-primary-800' : 'bg-amber-50 text-amber-700'}`}>
-                    {c.summary ? '✓ Summarized' : 'Pending'}
+                  <span className="hidden sm:inline text-xs text-gray-500 shrink-0">{c.caseType || 'Other'}</span>
+                  <span className={`status shrink-0 ${c.summary ? 'text-primary-700' : 'text-amber-600'}`}>
+                    {c.summary ? 'Summarized' : 'Pending'}
                   </span>
                 </Link>
               ))}
@@ -179,9 +178,9 @@ export default function Dashboard() {
             </div>
 
             {hearings.length === 0 ? (
-              <div className="text-center py-6">
+              <div className="flex items-center justify-between gap-4 py-2">
                 <p className="text-sm text-gray-500">No upcoming hearings.</p>
-                <Link to="/hearings" className="text-xs text-primary-700 hover:underline">+ Schedule one</Link>
+                <Link to="/hearings" className="text-xs text-primary-700 hover:underline shrink-0">+ Schedule one</Link>
               </div>
             ) : (
               <div className="space-y-3">

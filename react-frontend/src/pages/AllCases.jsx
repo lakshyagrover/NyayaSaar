@@ -169,10 +169,9 @@ export default function AllCases() {
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="form-input pl-9"
+            className="form-input"
             placeholder="Search by title, case number or court…"
           />
-          <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
         </div>
 
         {/* Summary status tabs */}
@@ -219,7 +218,6 @@ export default function AllCases() {
       {/* Error */}
       {!loading && error && (
         <div className="card text-center py-12 border-red-200 bg-red-50/50">
-          <p className="text-3xl mb-2">⚠️</p>
           <h2 className="text-base font-semibold text-red-800">Unable to load cases</h2>
           <p className="text-sm text-red-600 mt-1 max-w-md mx-auto">{error}</p>
           <button onClick={fetchCases} className="btn-secondary mt-4">🔄 Retry</button>
@@ -228,18 +226,18 @@ export default function AllCases() {
 
       {/* Empty */}
       {!loading && !error && cases.length === 0 && (
-        <div className="card text-center py-16 border-2 border-dashed border-primary-100">
-          <p className="text-4xl mb-3">📁</p>
-          <h2 className="text-lg font-semibold text-court-navy">No cases yet</h2>
-          <p className="text-sm text-gray-500 mt-1">Upload a judgment PDF to get started.</p>
-          <Link to="/upload" className="btn-primary mt-5 inline-flex">⬆️ Upload Judgment</Link>
+        <div className="card flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-base font-semibold text-court-navy">No cases yet</h2>
+            <p className="text-sm text-gray-500">Upload a judgment PDF to get started.</p>
+          </div>
+          <Link to="/upload" className="btn-primary shrink-0">⬆️ Upload Judgment</Link>
         </div>
       )}
 
       {/* Filtered empty */}
       {!loading && !error && cases.length > 0 && filteredCases.length === 0 && (
-        <div className="card text-center py-12">
-          <p className="text-3xl mb-2">🔍</p>
+        <div className="card flex items-center justify-between gap-4">
           <p className="font-medium text-gray-700">No cases match your search</p>
           <button
             onClick={() => {
@@ -247,7 +245,7 @@ export default function AllCases() {
               setStatusFilter('ALL')
               setTypeFilter('ALL')
             }}
-            className="btn-secondary mt-3"
+            className="btn-secondary shrink-0"
           >
             Clear Filters
           </button>
@@ -273,9 +271,9 @@ export default function AllCases() {
                     {c.title?.[0]?.toUpperCase() || '?'}
                   </div>
                   <div className="flex flex-wrap justify-end gap-1.5">
-                    <span className="badge badge-gray">{c.caseType || 'Other'}</span>
-                    <span className={`badge ${c.summary ? 'bg-primary-100 text-primary-800' : 'bg-amber-50 text-amber-700'}`}>
-                      {c.summary ? '✓ Summarized' : 'Pending'}
+                    <span className="text-xs text-gray-500">{c.caseType || 'Other'}</span>
+                    <span className={`status ${c.summary ? 'text-primary-700' : 'text-amber-600'}`}>
+                      {c.summary ? 'Summarized' : 'Pending'}
                     </span>
                   </div>
                 </div>
@@ -289,14 +287,14 @@ export default function AllCases() {
                 <p className="text-xs text-gray-500 mt-1 truncate">{c.caseNumber}</p>
 
                 <div className="mt-3 space-y-1 text-xs text-gray-600">
-                  <p className="truncate">🏛️ {c.court || 'Court not specified'}</p>
-                  <p>📅 {date}</p>
+                  <p className="truncate">{c.court || 'Court not specified'}</p>
+                  <p>{date}</p>
                 </div>
 
                 {/* Counts */}
                 <div className="mt-4 flex gap-4 text-xs text-gray-500">
-                  <span>⚖️ {c._count?.citations || 0} citations</span>
-                  <span>📅 {c._count?.hearings || 0} hearings</span>
+                  <span>{c._count?.citations || 0} citations</span>
+                  <span>{c._count?.hearings || 0} hearings</span>
                 </div>
 
                 {/* Actions */}

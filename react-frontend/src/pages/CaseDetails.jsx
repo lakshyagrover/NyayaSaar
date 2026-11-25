@@ -199,7 +199,6 @@ export default function CaseDetails() {
           </Link>
         </div>
         <div className="card text-center py-16 border-red-200 bg-red-50/50">
-          <span className="text-4xl mb-3 block">⚠️</span>
           <h2 className="text-lg font-bold text-red-800">Error Loading Case</h2>
           <p className="text-sm text-red-600 mt-1 max-w-md mx-auto">{error}</p>
           <div className="mt-5">
@@ -287,12 +286,12 @@ export default function CaseDetails() {
               </span>
               <span className="badge badge-gray">{caseData.caseType || 'General'}</span>
               {caseData.extractedText ? (
-                <span className="badge badge-green">✓ Text Extracted</span>
+                <span className="status text-green-700">Text Extracted</span>
               ) : (
-                <span className="badge badge-yellow">OCR Pending</span>
+                <span className="status text-amber-600">OCR Pending</span>
               )}
               {caseData.summary ? (
-                <span className="badge badge-blue">✓ AI Summary Ready</span>
+                <span className="status text-primary-700">AI Summary Ready</span>
               ) : null}
             </div>
             <h1 className="text-2xl font-bold text-gray-900 font-serif">
@@ -305,7 +304,7 @@ export default function CaseDetails() {
 
           <div className="flex gap-2 flex-wrap shrink-0">
             <Link to={`/cases/${id}/summary`} className="btn-primary">
-              🤖 View AI Summary
+              📜 View AI Summary
             </Link>
             <Link to={`/cases/${id}/similar`} className="btn-secondary">
               🔍 Similar Judgments
@@ -316,7 +315,7 @@ export default function CaseDetails() {
         {/* Metadata Grid */}
         <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           <div className="bg-gray-50 rounded-lg p-3.5">
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">
+            <p className="text-xs text-gray-500">
               Judgment Date
             </p>
             <p className="font-semibold text-gray-900 mt-1 text-sm">
@@ -324,7 +323,7 @@ export default function CaseDetails() {
             </p>
           </div>
           <div className="bg-gray-50 rounded-lg p-3.5">
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">
+            <p className="text-xs text-gray-500">
               Court Jurisdiction
             </p>
             <p className="font-semibold text-gray-900 mt-1 text-sm truncate">
@@ -332,7 +331,7 @@ export default function CaseDetails() {
             </p>
           </div>
           <div className="bg-gray-50 rounded-lg p-3.5">
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">
+            <p className="text-xs text-gray-500">
               Case Category
             </p>
             <p className="font-semibold text-gray-900 mt-1 text-sm">
@@ -340,7 +339,7 @@ export default function CaseDetails() {
             </p>
           </div>
           <div className="bg-gray-50 rounded-lg p-3.5">
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">
+            <p className="text-xs text-gray-500">
               Added to System
             </p>
             <p className="font-semibold text-gray-900 mt-1 text-sm">
@@ -355,7 +354,7 @@ export default function CaseDetails() {
         <div className="card flex items-center gap-3">
           <span className="text-3xl">📄</span>
           <div>
-            <p className="text-xs text-gray-500 uppercase font-medium">Attached Documents</p>
+            <p className="text-xs text-gray-500">Attached Documents</p>
             <p className="text-lg font-bold text-gray-900">
               {caseData._count?.documents ?? caseData.documents?.length ?? 0} files
             </p>
@@ -364,7 +363,7 @@ export default function CaseDetails() {
         <div className="card flex items-center gap-3">
           <span className="text-3xl">⚖️</span>
           <div>
-            <p className="text-xs text-gray-500 uppercase font-medium">Citations</p>
+            <p className="text-xs text-gray-500">Citations</p>
             <p className="text-lg font-bold text-gray-900">
               {caseData._count?.citations ?? caseData.citations?.length ?? 0} cited
             </p>
@@ -373,7 +372,7 @@ export default function CaseDetails() {
         <div className="card flex items-center gap-3">
           <span className="text-3xl">📅</span>
           <div>
-            <p className="text-xs text-gray-500 uppercase font-medium">Hearings</p>
+            <p className="text-xs text-gray-500">Hearings</p>
             <p className="text-lg font-bold text-gray-900">
               {caseData._count?.hearings ?? caseData.hearings?.length ?? 0} scheduled
             </p>
@@ -385,7 +384,6 @@ export default function CaseDetails() {
       {primaryDocument && (
         <div className="card flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-primary-50/30 border-primary-200">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">📑</span>
             <div>
               <p className="text-sm font-semibold text-gray-900">
                 {primaryDocument.fileName || caseData.pdfFileName || 'Judgment PDF'}
@@ -419,7 +417,6 @@ export default function CaseDetails() {
       {!primaryDocument && (
         <div className="card flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-amber-50/40 border-amber-200">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">⚠️</span>
             <div>
               <p className="text-sm font-semibold text-amber-900">No PDF Document Attached</p>
               <p className="text-xs text-amber-700 mt-0.5">
@@ -437,7 +434,7 @@ export default function CaseDetails() {
       <div className="card">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold text-gray-900 text-base flex items-center gap-2">
-            <span>📝</span> Extracted Judgment Text
+            Extracted Judgment Text
           </h2>
           <div className="flex items-center gap-2">
             {primaryDocument && (
@@ -463,7 +460,6 @@ export default function CaseDetails() {
           </div>
         ) : (
           <div className="bg-amber-50/50 rounded-lg p-8 text-center text-amber-800 border border-amber-200">
-            <span className="text-3xl block mb-2">🔍</span>
             <p className="text-sm font-semibold">Digital text layer not detected (Scanned Document)</p>
             <p className="text-xs text-amber-700 mt-1 max-w-md mx-auto">
               This document consists of scanned images without a standard digital text stream. It has been registered and marked as <strong>OCR Pending</strong> for future OCR processing.
@@ -489,7 +485,7 @@ export default function CaseDetails() {
           <h2 className="font-semibold text-gray-900 text-base flex items-center gap-2">
             📚 Legal Citations
             {citations?.count != null && (
-              <span className="badge badge-gray">{citations.count}</span>
+              <span className="text-sm font-normal text-gray-400">{citations.count}</span>
             )}
           </h2>
           <div className="flex items-center gap-2">
@@ -517,21 +513,25 @@ export default function CaseDetails() {
         ) : citations?.citations?.length > 0 ? (
           <div className="space-y-4">
             {[
-              { label: '⚖️ Cases Cited', types: ['case_law', 'case_name'] },
-              { label: '📕 Acts & Statutes', types: ['statute'] },
-              { label: '§ Sections & Articles', types: ['section'] },
+              { label: 'Cases Cited', types: ['case_law', 'case_name'], box: 'badge-case', tag: 'Case' },
+              { label: 'Acts & Statutes', types: ['statute'], box: 'badge-act', tag: 'Act' },
+              { label: 'Sections & Articles', types: ['section'], box: 'badge-section', tag: 'Section' },
             ].map((group) => {
               const items = citations.citations.filter((c) => group.types.includes(c.type))
               if (items.length === 0) return null
               return (
                 <div key={group.label}>
-                  <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
+                  <p className="text-sm font-semibold text-court-navy mb-1 flex items-center gap-2">
+                    <span className={group.box}>{group.tag}</span>
                     {group.label} ({items.length})
                   </p>
                   <div className="divide-y divide-gray-100">
                     {items.map((c, idx) => (
                       <div key={c.id || idx} className="py-2">
-                        <p className="text-sm font-semibold text-gray-900 break-words">{c.citation}</p>
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="text-sm font-semibold text-gray-900 break-words">{c.citation}</p>
+                          <span className={`${group.box} shrink-0`}>{group.tag}</span>
+                        </div>
                         {c.context && (
                           <p className="text-xs text-gray-400 mt-0.5">
                             <span className="font-medium">Where it appears:</span> {c.context}
@@ -545,8 +545,7 @@ export default function CaseDetails() {
             })}
           </div>
         ) : (
-          <div className="text-center py-8">
-            <p className="text-2xl mb-2">📄</p>
+          <div className="py-3">
             <p className="text-sm text-gray-500">
               {!caseData?.extractedText
                 ? 'Upload a digital PDF to enable citation extraction.'

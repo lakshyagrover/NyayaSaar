@@ -12,7 +12,12 @@
   }
 
   h1, h2, h3 {
-    @apply font-serif;
+    @apply font-serif tracking-tight;
+  }
+
+  /* numbers line up neatly in tables and stats */
+  body {
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -73,4 +78,18 @@
   .badge-yellow { @apply badge bg-yellow-100 text-yellow-800; }
   .badge-red    { @apply badge bg-red-100 text-red-800; }
   .badge-gray   { @apply badge bg-gray-100 text-gray-800; }
+
+  /* Citation type boxes: rose for cases, sand-gold for Acts, sage for sections */
+  .badge-case    { @apply badge border bg-primary-50 text-primary-800 border-primary-200; }
+  .badge-act     { @apply badge border bg-[#f6ecda] text-[#7a5418] border-[#e8d3ab]; }
+  .badge-section { @apply badge border bg-[#e4efeb] text-[#2d5b53] border-[#c3dbd3]; }
+
+  /* Small coloured dot + text (the dot takes the text colour) */
+  .status {
+    @apply inline-flex items-center gap-1.5 text-xs font-medium;
+  }
+  .status::before {
+    content: '';
+    @apply w-2 h-2 rounded-full bg-current;
+  }
 }

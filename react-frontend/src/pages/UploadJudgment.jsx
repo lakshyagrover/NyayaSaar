@@ -125,7 +125,6 @@ export default function UploadJudgment() {
       {/* Error Alert */}
       {error && (
         <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-3">
-          <span className="text-base shrink-0">⚠️</span>
           <div className="flex-1">
             <p className="font-semibold">Upload failed</p>
             <p className="mt-0.5">{error}</p>
@@ -140,7 +139,7 @@ export default function UploadJudgment() {
       {result && (
         <div className="p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 text-sm">
           <div className="flex items-center justify-between gap-3">
-            <p className="font-semibold">✅ Uploaded successfully</p>
+            <p className="font-semibold">Uploaded successfully</p>
             <Link to={`/cases/${result.case?.id}`} className="btn-primary text-xs py-1.5 px-3">
               Go to Case →
             </Link>
@@ -167,8 +166,8 @@ export default function UploadJudgment() {
                 : 'border-gray-200 bg-gray-50 hover:border-primary-300 hover:bg-primary-50'
             } ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
           >
-            <div className="w-12 h-12 rounded-full bg-white border border-primary-100 flex items-center justify-center text-2xl mb-2">
-              {file ? '📑' : '📄'}
+            <div className="w-12 h-12 rounded-full bg-white border border-primary-100 flex items-center justify-center text-xs font-bold tracking-wide text-primary-700 mb-2">
+              PDF
             </div>
             {file ? (
               <>

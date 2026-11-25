@@ -132,15 +132,15 @@ export default function AISummary() {
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="badge badge-blue">Groq AI</span>
-              <span className="badge badge-gray">{caseData?.caseNumber}</span>
+              <span className="status text-gray-500">Groq AI</span>
+              <span className="text-xs text-gray-500">{caseData?.caseNumber}</span>
               {hasExtractedText ? (
-                <span className="badge badge-green">✓ Extracted Text Available</span>
+                <span className="status text-green-700">Extracted Text Available</span>
               ) : (
-                <span className="badge badge-yellow">⚠️ OCR Pending</span>
+                <span className="status text-amber-600">OCR Pending</span>
               )}
               {summary && (
-                <span className="badge badge-green">Summary Active</span>
+                <span className="status text-primary-700">Summary Active</span>
               )}
             </div>
             <h1 className="text-2xl font-bold text-gray-900 font-serif">
@@ -206,13 +206,6 @@ export default function AISummary() {
           }`}
         >
           <div className="flex items-start gap-3">
-            <span className="text-2xl">
-              {errorCode === 'NO_EXTRACTED_TEXT'
-                ? '📄'
-                : errorCode === 'API_KEY_NOT_CONFIGURED'
-                ? '🔑'
-                : '⚠️'}
-            </span>
             <div className="flex-1">
               <h3 className="font-bold text-sm">
                 {errorCode === 'NO_EXTRACTED_TEXT'
@@ -268,15 +261,14 @@ export default function AISummary() {
       {summary ? (
         <div className="space-y-6">
           {/* Legal AI Disclaimer Banner */}
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-xs text-blue-900 flex items-start gap-3">
-            <span className="text-lg">⚖️</span>
+          <div className="bg-primary-50 border border-primary-100 rounded-xl p-4 text-xs text-primary-900 flex items-start gap-3">
             <div>
               <p className="font-semibold">Legal Study Aid & Research Disclaimer</p>
-              <p className="mt-0.5 text-blue-800 leading-relaxed">
+              <p className="mt-0.5 text-primary-800 leading-relaxed">
                 {summary.disclaimer ||
                   'This summary is an AI-generated study aid designed for legal research and educational reference. It does not constitute formal legal advice.'}
               </p>
-              <p className="text-[11px] text-blue-600 mt-1">
+              <p className="text-[11px] text-primary-700 mt-1">
                 Model: <span className="font-mono font-medium">{summary.model || 'openai/gpt-oss-120b'}</span> • Generated on:{' '}
                 {summary.generatedAt ? new Date(summary.generatedAt).toLocaleString() : 'Just now'}
               </p>
@@ -286,9 +278,9 @@ export default function AISummary() {
           {/* 8 Structured Legal Summary Sections */}
           <div className="grid grid-cols-1 gap-5">
             {/* 1. Case Overview */}
-            <div className="card border-l-4 border-l-primary-600">
-              <h2 className="font-semibold text-gray-900 mb-2 flex items-center gap-2 text-base">
-                <span>📌</span> 1. Case Overview
+            <div className="card border-l-4 border-l-primary-700">
+              <h2 className="font-semibold text-court-navy mb-2 flex items-center gap-2 text-base">
+                1. Case Overview
               </h2>
               <div className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
                 {summary.caseOverview}
@@ -296,9 +288,9 @@ export default function AISummary() {
             </div>
 
             {/* 2. Important Facts */}
-            <div className="card border-l-4 border-l-blue-600">
-              <h2 className="font-semibold text-gray-900 mb-2 flex items-center gap-2 text-base">
-                <span>📋</span> 2. Important Material Facts
+            <div className="card border-l-4 border-l-primary-700">
+              <h2 className="font-semibold text-court-navy mb-2 flex items-center gap-2 text-base">
+                2. Important Material Facts
               </h2>
               <div className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
                 {summary.importantFacts}
@@ -306,9 +298,9 @@ export default function AISummary() {
             </div>
 
             {/* 3. Legal Issues */}
-            <div className="card border-l-4 border-l-amber-500">
-              <h2 className="font-semibold text-gray-900 mb-2 flex items-center gap-2 text-base">
-                <span>⚖️</span> 3. Legal Issues & Questions of Law Framed
+            <div className="card border-l-4 border-l-primary-700">
+              <h2 className="font-semibold text-court-navy mb-2 flex items-center gap-2 text-base">
+                3. Legal Issues & Questions of Law Framed
               </h2>
               <div className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
                 {summary.legalIssues}
@@ -316,9 +308,9 @@ export default function AISummary() {
             </div>
 
             {/* 4. Arguments of Petitioner / Appellant */}
-            <div className="card border-l-4 border-l-indigo-600">
-              <h2 className="font-semibold text-gray-900 mb-2 flex items-center gap-2 text-base">
-                <span>🗣️</span> 4. Arguments of the Petitioner / Appellant
+            <div className="card border-l-4 border-l-primary-700">
+              <h2 className="font-semibold text-court-navy mb-2 flex items-center gap-2 text-base">
+                4. Arguments of the Petitioner / Appellant
               </h2>
               <div className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
                 {summary.petitionerArguments}
@@ -326,9 +318,9 @@ export default function AISummary() {
             </div>
 
             {/* 5. Arguments of Respondent */}
-            <div className="card border-l-4 border-l-teal-600">
-              <h2 className="font-semibold text-gray-900 mb-2 flex items-center gap-2 text-base">
-                <span>🛡️</span> 5. Arguments of the Respondent / Defendant
+            <div className="card border-l-4 border-l-primary-700">
+              <h2 className="font-semibold text-court-navy mb-2 flex items-center gap-2 text-base">
+                5. Arguments of the Respondent / Defendant
               </h2>
               <div className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
                 {summary.respondentArguments}
@@ -336,9 +328,9 @@ export default function AISummary() {
             </div>
 
             {/* 6. Court's Reasoning */}
-            <div className="card border-l-4 border-l-purple-600">
-              <h2 className="font-semibold text-gray-900 mb-2 flex items-center gap-2 text-base">
-                <span>🏛️</span> 6. Court’s Findings & Legal Reasoning
+            <div className="card border-l-4 border-l-primary-700">
+              <h2 className="font-semibold text-court-navy mb-2 flex items-center gap-2 text-base">
+                6. Court’s Findings & Legal Reasoning
               </h2>
               <div className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
                 {summary.courtReasoning}
@@ -346,9 +338,9 @@ export default function AISummary() {
             </div>
 
             {/* 7. Final Judgment / Decision */}
-            <div className="card border-l-4 border-l-emerald-600 bg-emerald-50/10">
-              <h2 className="font-semibold text-emerald-950 mb-2 flex items-center gap-2 text-base">
-                <span>📜</span> 7. Final Judgment & Operative Order
+            <div className="card border-l-4 border-l-primary-700">
+              <h2 className="font-semibold text-court-navy mb-2 flex items-center gap-2 text-base">
+                7. Final Judgment & Operative Order
               </h2>
               <div className="text-sm text-gray-900 leading-relaxed whitespace-pre-wrap font-medium">
                 {summary.finalDecision}
@@ -356,9 +348,9 @@ export default function AISummary() {
             </div>
 
             {/* 8. Important Legal Principles */}
-            <div className="card border-l-4 border-l-yellow-500">
-              <h2 className="font-semibold text-gray-900 mb-2 flex items-center gap-2 text-base">
-                <span>💡</span> 8. Important Legal Principles & Ratio Decidendi
+            <div className="card border-l-4 border-l-primary-700">
+              <h2 className="font-semibold text-court-navy mb-2 flex items-center gap-2 text-base">
+                8. Important Legal Principles & Ratio Decidendi
               </h2>
               <div className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
                 {summary.legalPrinciples}
@@ -369,7 +361,7 @@ export default function AISummary() {
           {/* Citations List */}
           <div className="card">
             <h2 className="font-semibold text-gray-900 mb-3 flex items-center gap-2 text-base">
-              <span>📚</span> Legal Citations & Precedents Identified ({citations.length})
+              Legal Citations & Precedents Identified ({citations.length})
             </h2>
             {citations.length > 0 ? (
               <div className="divide-y divide-gray-100">
@@ -383,7 +375,7 @@ export default function AISummary() {
                         <p className="text-xs text-gray-500 mt-0.5">{c.context}</p>
                       )}
                     </div>
-                    <span className="badge badge-gray text-[10px] uppercase tracking-wider shrink-0">
+                    <span className={`${{ case_law: 'badge-case', case_name: 'badge-case', statute: 'badge-act', section: 'badge-section' }[c.type] || 'badge-gray'} shrink-0`}>
                       {{ case_law: 'Case', case_name: 'Case', statute: 'Act', section: 'Section' }[c.type] || 'Citation'}
                     </span>
                   </div>
@@ -398,19 +390,20 @@ export default function AISummary() {
         </div>
       ) : !generating ? (
         /* Empty State */
-        <div className="card text-center py-16 border-dashed border-2 border-gray-200">
-          <span className="text-4xl block mb-3">⚖️</span>
-          <h2 className="text-lg font-bold text-gray-900">No Summary Generated Yet</h2>
-          <p className="text-xs text-gray-500 mt-1 max-w-md mx-auto">
+        <div className="card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+          <h2 className="text-base font-semibold text-court-navy">No Summary Generated Yet</h2>
+          <p className="text-xs text-gray-500 mt-1 max-w-md">
             Generate an AI-powered structured case brief highlighting facts, issues, arguments, reasoning, and final decisions using AI.
           </p>
+          </div>
 
-          <div className="mt-6">
+          <div className="shrink-0">
             {hasExtractedText ? (
               <button
                 onClick={() => handleGenerate(false)}
                 disabled={generating}
-                className="btn-primary text-sm flex items-center gap-2 mx-auto"
+                className="btn-primary text-sm flex items-center gap-2"
               >
                 ⚡ Generate AI Summary Now
               </button>

@@ -3,20 +3,6 @@ import { useParams, Link } from 'react-router-dom'
 import api from '../services/api.js'
 
 // Badge style map for citation types
-const TYPE_BADGE = {
-  case_law: 'badge-blue',
-  case_name: 'badge-blue',
-  statute:  'badge-green',
-  section:  'badge-yellow',
-}
-
-const TYPE_LABEL = {
-  case_law: '⚖️ Case Law',
-  case_name: '⚖️ Case Law',
-  statute:  '📜 Statute / Act',
-  section:  '§ Section / Article',
-}
-
 export default function SimilarJudgments() {
   const { id } = useParams()
 
@@ -104,10 +90,10 @@ export default function SimilarJudgments() {
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 flex-wrap mb-2">
-              <span className="badge badge-blue">🔍 Similarity</span>
-              <span className="badge badge-gray">TF-IDF Cosine</span>
+              <span className="status text-primary-700">Similarity</span>
+              <span className="text-xs text-gray-500">TF-IDF Cosine</span>
               {data?.targetCase && (
-                <span className="badge badge-gray font-mono text-xs">
+                <span className="text-xs text-gray-500 font-mono">
                   {data.targetCase.caseNumber}
                 </span>
               )}
@@ -134,7 +120,7 @@ export default function SimilarJudgments() {
         </div>
       ) : error ? (
         <div className="card border-red-200 bg-red-50/40 text-center py-10">
-          <p className="text-sm font-medium text-red-700">⚠️ {error}</p>
+          <p className="text-sm font-medium text-red-700">{error}</p>
           <button onClick={loadSimilar} className="btn-secondary text-xs mt-4">
             Retry
           </button>
@@ -144,7 +130,7 @@ export default function SimilarJudgments() {
           {/* Disclaimer */}
           {data?.disclaimer && (
             <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-xs text-amber-800">
-              ⚠️ <strong>Note:</strong> {data.disclaimer}
+              <strong>Note:</strong> {data.disclaimer}
             </div>
           )}
 
@@ -166,7 +152,7 @@ export default function SimilarJudgments() {
                         {item.similarityPercent}% similar
                       </span>
                       {item.caseType && (
-                        <span className="badge badge-gray text-xs">{item.caseType}</span>
+                        <span className="text-xs text-gray-500">{item.caseType}</span>
                       )}
                     </div>
 
@@ -176,11 +162,11 @@ export default function SimilarJudgments() {
                     <p className="text-xs text-gray-500 font-mono mt-0.5">{item.caseNumber}</p>
 
                     {item.court && (
-                      <p className="text-xs text-gray-500 mt-1">🏛️ {item.court}</p>
+                      <p className="text-xs text-gray-500 mt-1">{item.court}</p>
                     )}
                     {item.judgmentDate && (
                       <p className="text-xs text-gray-500">
-                        📅 {new Date(item.judgmentDate).toLocaleDateString('en-IN', {
+                        {new Date(item.judgmentDate).toLocaleDateString('en-IN', {
                           day: '2-digit', month: 'short', year: 'numeric',
                         })}
                       </p>
@@ -208,13 +194,15 @@ export default function SimilarJudgments() {
               ))}
             </div>
           ) : (
-            <div className="card text-center py-16 border-dashed border-2 border-gray-200">
-              <span className="text-4xl block mb-3">🔍</span>
-              <h2 className="text-lg font-bold text-gray-700">No Similar Cases Found</h2>
-              <p className="text-xs text-gray-500 mt-2 max-w-sm mx-auto">
+            <div className="card flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-base font-semibold text-court-navy">No Similar Cases Found</h2>
+                <p className="text-xs text-gray-500 mt-1">
                 {data?.message ||
                   'Upload more digital judgments to enable similarity comparison across your case library.'}
-              </p>
+                </p>
+              </div>
+              <Link to="/upload" className="btn-secondary text-xs shrink-0">⬆️ Upload Judgment</Link>
             </div>
           )}
         </>
@@ -226,7 +214,7 @@ export default function SimilarJudgments() {
           <h2 className="font-semibold text-gray-900 text-base flex items-center gap-2">
             📚 Legal Citations Extracted
             {citations?.count != null && (
-              <span className="badge badge-gray">{citations.count}</span>
+              <span className="text-sm font-normal text-gray-400">{citations.count}</span>
             )}
           </h2>
           <button
@@ -250,7 +238,7 @@ export default function SimilarJudgments() {
           </div>
         ) : citError ? (
           <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-700">
-            ⚠️ {citError}
+            {citError}
           </div>
         ) : citations?.citations?.length > 0 ? (
           <>
@@ -268,19 +256,16 @@ export default function SimilarJudgments() {
                       </p>
                     )}
                   </div>
-                  <span
-                    className={`badge text-[10px] uppercase tracking-wider shrink-0 ${TYPE_BADGE[c.type] || 'badge-gray'}`}
-                  >
-                    {TYPE_LABEL[c.type] || c.type || 'citation'}
+                  <span className={`${{ case_law: 'badge-case', case_name: 'badge-case', statute: 'badge-act', section: 'badge-section' }[c.type] || 'badge-gray'} shrink-0`}>
+                    {{ case_law: 'Case', case_name: 'Case', statute: 'Act', section: 'Section' }[c.type] || 'Citation'}
                   </span>
                 </div>
               ))}
             </div>
           </>
         ) : (
-          <div className="text-center py-10">
-            <p className="text-3xl mb-2">📄</p>
-            <p className="text-sm font-medium text-gray-600">No citations extracted yet</p>
+          <div className="py-3">
+            <p className="text-sm font-medium text-gray-800">No citations extracted yet</p>
             <p className="text-xs text-gray-500 mt-1">
               {citations?.message ||
                 'Click "Extract Citations" above to scan this judgment for legal references.'}

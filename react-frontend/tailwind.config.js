@@ -31,8 +31,8 @@ export default {
         },
       },
       fontFamily: {
-        sans:  ['Inter', 'ui-sans-serif', 'system-ui'],
-        serif: ['Merriweather', 'ui-serif', 'Georgia'],
+        sans:  ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+        serif: ['"Source Serif 4"', 'Georgia', 'serif'],
       },
     },
   },
