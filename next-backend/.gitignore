@@ -3,4 +3,15 @@ node_modules/
 dist/
 build/
 .env
+.env.local
+.env.*.local
 *.log
+storage/
+uploads/
+prisma/dev.db
+**/prisma/dev.db
+**/*.db
+**/*.sqlite
+.DS_Store
+
+.DS_Store

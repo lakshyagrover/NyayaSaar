@@ -1,31 +1,41 @@
+
 import axios from 'axios'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
   withCredentials: true,
+  timeout: 300000,
   headers: {
     'Content-Type': 'application/json',
   },
 })
 
-// Attach JWT from localStorage to every request
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+
   return config
 })
 
-// Global error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired — clear local storage and redirect to login
-      localStorage.removeItem('token')
-      window.location.href = '/login'
+      const url = error.config?.url || ''
+
+      if (
+        !url.includes('/summarize') &&
+        !url.includes('/similar') &&
+        !url.includes('/citations')
+      ) {
+        localStorage.removeItem('token')
+        window.location.href = '/login'
+      }
     }
+
     return Promise.reject(error)
   },
 )
