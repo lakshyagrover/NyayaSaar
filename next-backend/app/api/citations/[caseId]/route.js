@@ -85,6 +85,26 @@ const CITATION_PATTERNS = [
 ]
 
 /**
+ * Return the full sentence around a citation.
+ * We look back to the previous full stop and forward to the next one.
+ * If a sentence is very long, we stop after about 300 characters on a whole word.
+ */
+function getSentence(text, start, end) {
+  const before = text.slice(Math.max(0, start - 300), start)
+  const after = text.slice(end, end + 300)
+
+  // start of sentence = just after the last ". " before the citation
+  const lastStop = Math.max(before.lastIndexOf('. '), before.lastIndexOf('; '))
+  let sentenceStart = lastStop >= 0 ? before.slice(lastStop + 2) : before.replace(/^\S*\s/, '')
+
+  // end of sentence = the next "." after the citation
+  const nextStop = after.search(/[.;](\s|$)/)
+  let sentenceEnd = nextStop >= 0 ? after.slice(0, nextStop + 1) : after.replace(/\s\S*$/, '') + ' ...'
+
+  return (sentenceStart + text.slice(start, end) + sentenceEnd).trim()
+}
+
+/**
  * Extract citations from text using regex patterns.
  *
  * Returns an array of objects: { citation, type, context }
@@ -115,22 +135,10 @@ function extractCitationsFromText(text) {
       if (seen.has(key)) continue
       seen.add(key)
 
-      // Extract surrounding context (60 chars before + 60 chars after the match)
-      const start = Math.max(0, match.index - 60)
-      const end = Math.min(text.length, match.index + citation.length + 60)
-      let context = text.slice(start, end).replace(/\s+/g, ' ').trim()
+      // Show the full sentence in which the citation appears
+      const context = getSentence(text, match.index, match.index + match[0].length)
 
-      // Start and end the snippet on whole words (no "…" dots)
-      if (start > 0) context = context.replace(/^\S*\s/, '')
-      if (end < text.length) context = context.replace(/\s\S*$/, '')
-
-      // Remove page footers like "Criminal Appeal No. 4277 of 2024Page 4 of 13"
-      context = context
-        .replace(/[A-Za-z. ]*No\.\s*\d+\s*of\s*\d{4}\s*Page\s*\d+\s*of\s*\d+/gi, ' ')
-        .replace(/\s+/g, ' ')
-        .trim()
-
-      results.push({ citation, type, context: context.slice(0, 300) })
+      results.push({ citation, type, context })
     }
   }
 
@@ -250,7 +258,12 @@ async function runExtraction(caseRecord) {
 
   // PDF text has line breaks and special spaces inside names ("Prevention   of\nCorruption").
   // Turn them all into single normal spaces so the patterns can match.
-  const cleanText = text.replace(/\u00ad/g, '').replace(/\s+/g, ' ')
+  const cleanText = text
+    .replace(/\u00ad/g, '')
+    .replace(/\s+/g, ' ')
+    // remove page footers like "Criminal Appeal No. 4277 of 2024Page 4 of 13"
+    .replace(/[A-Z][A-Za-z.()]*(?: [A-Za-z.()]+){0,4} No\. ?\d+[\d\-–]* of \d{4} ?Page \d+ of \d+/g, ' ')
+    .replace(/\s+/g, ' ')
 
   // Run regex-based extraction
   const extracted = extractCitationsFromText(cleanText)
