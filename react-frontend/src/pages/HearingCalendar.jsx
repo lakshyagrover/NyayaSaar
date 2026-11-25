@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../services/api.js'
 
-const STATUS_BADGE = {
-  SCHEDULED: 'bg-primary-100 text-primary-800',
-  COMPLETED: 'badge-green',
-  ADJOURNED: 'badge-yellow',
-  CANCELLED: 'badge-red',
+// Colour of the status dropdown
+const STATUS_STYLE = {
+  SCHEDULED: 'bg-primary-50 text-primary-800 border-primary-200',
+  COMPLETED: 'bg-green-50 text-green-800 border-green-200',
+  ADJOURNED: 'bg-amber-50 text-amber-800 border-amber-200',
+  CANCELLED: 'bg-red-50 text-red-700 border-red-200',
 }
 
 const emptyForm = { caseId: '', date: '', time: '', location: '', notes: '' }
@@ -19,6 +20,7 @@ export default function HearingCalendar() {
   const [form, setForm] = useState(emptyForm)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [editingId, setEditingId] = useState(null) // id of the hearing being edited
 
   // Calendar: which month is shown, and which day is clicked
   const [month, setMonth] = useState(() => {
@@ -58,8 +60,13 @@ export default function HearingCalendar() {
     }
     setSaving(true)
     try {
-      await api.post('/hearings', form)
+      if (editingId) {
+        await api.put(`/hearings/${editingId}`, form)
+      } else {
+        await api.post('/hearings', form)
+      }
       setForm(emptyForm)
+      setEditingId(null)
       setShowForm(false)
       loadData()
     } catch (err) {
@@ -128,6 +135,7 @@ export default function HearingCalendar() {
     setSelectedDay(k)
     if (!hearingsByDay[k]) {
       setForm({ ...emptyForm, date: k })
+      setEditingId(null)
       setShowForm(true)
     }
   }
@@ -137,9 +145,23 @@ export default function HearingCalendar() {
     return d.getMonth() === month.getMonth() && d.getFullYear() === month.getFullYear()
   })
 
+  // Fill the form with this hearing and open it
+  const startEdit = (h) => {
+    setForm({
+      caseId: h.case?.id || h.caseId,
+      date: dayKey(h.date),
+      time: h.time || '',
+      location: h.location || '',
+      notes: h.notes || '',
+    })
+    setEditingId(h.id)
+    setShowForm(true)
+    setTimeout(() => document.getElementById('hearing-form')?.scrollIntoView({ behavior: 'smooth' }), 0)
+  }
+
   const HearingRow = ({ h }) => (
-    <div className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-      <div>
+    <div className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="min-w-0">
         <p className="font-medium text-gray-900">
           {new Date(h.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
           {h.time && <span className="text-gray-500"> • {h.time}</span>}
@@ -150,19 +172,27 @@ export default function HearingCalendar() {
         {h.location && <p className="text-xs text-gray-500">📍 {h.location}</p>}
         {h.notes && <p className="text-xs text-gray-500">📝 {h.notes}</p>}
       </div>
-      <div className="flex items-center gap-2">
-        <span className={`badge ${STATUS_BADGE[h.status] || 'badge-gray'}`}>{h.status}</span>
+
+      {/* All controls are the same height so they line up */}
+      <div className="flex items-center gap-2 shrink-0">
         <select
           value={h.status}
           onChange={(e) => changeStatus(h.id, e.target.value)}
-          className="form-input text-xs py-1 w-auto"
+          className={`h-8 rounded-md border px-2 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-primary-500 ${
+            STATUS_STYLE[h.status] || 'bg-white text-gray-700 border-gray-300'
+          }`}
         >
           <option value="SCHEDULED">Scheduled</option>
           <option value="COMPLETED">Completed</option>
           <option value="ADJOURNED">Adjourned</option>
           <option value="CANCELLED">Cancelled</option>
         </select>
-        <button onClick={() => deleteHearing(h.id)} className="btn-danger text-xs">Delete</button>
+        <button onClick={() => startEdit(h)} className="btn-secondary h-8 px-3 py-0 text-xs">
+          ✏️ Edit
+        </button>
+        <button onClick={() => deleteHearing(h.id)} className="btn-danger h-8 px-3 py-0 text-xs">
+          🗑️ Delete
+        </button>
       </div>
     </div>
   )
@@ -174,7 +204,14 @@ export default function HearingCalendar() {
           <h1 className="text-3xl font-bold text-court-navy">Hearing Calendar</h1>
           <p className="text-sm text-gray-500 mt-0.5">Schedule and manage court hearings.</p>
         </div>
-        <button onClick={() => setShowForm(!showForm)} className="btn-primary shrink-0">
+        <button
+          onClick={() => {
+            setShowForm(!showForm)
+            setEditingId(null)
+            setForm(emptyForm)
+          }}
+          className="btn-primary shrink-0"
+        >
           {showForm ? 'Close' : '+ Schedule Hearing'}
         </button>
       </div>
@@ -185,10 +222,13 @@ export default function HearingCalendar() {
 
       {/* New hearing form */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="card grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form id="hearing-form" onSubmit={handleSubmit} className="card grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <h2 className="sm:col-span-2 text-lg font-semibold text-court-navy">
+            {editingId ? 'Edit Hearing' : 'Schedule Hearing'}
+          </h2>
           <div className="sm:col-span-2">
             <label className="form-label">Case *</label>
-            <select name="caseId" value={form.caseId} onChange={handleChange} className="form-input">
+            <select name="caseId" value={form.caseId} onChange={handleChange} disabled={!!editingId} className="form-input">
               <option value="">Select a case</option>
               {cases.map((c) => (
                 <option key={c.id} value={c.id}>{c.title} ({c.caseNumber})</option>
@@ -213,7 +253,7 @@ export default function HearingCalendar() {
           </div>
           <div className="sm:col-span-2">
             <button type="submit" disabled={saving} className="btn-primary">
-              {saving ? 'Saving…' : 'Save Hearing'}
+              {saving ? 'Saving…' : editingId ? 'Update Hearing' : 'Save Hearing'}
             </button>
           </div>
         </form>
