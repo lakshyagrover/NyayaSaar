@@ -50,7 +50,8 @@ export async function POST(request) {
       return NextResponse.json({ message: 'caseId and date are required.' }, { status: 400 })
     }
 
-    const hearingDate = new Date(date)
+    // Save at 12:00 noon so the day never shifts because of time zones
+    const hearingDate = new Date(/^\d{4}-\d{2}-\d{2}$/.test(date) ? `${date}T12:00:00` : date)
     if (isNaN(hearingDate.getTime())) {
       return NextResponse.json({ message: 'Invalid hearing date.' }, { status: 400 })
     }

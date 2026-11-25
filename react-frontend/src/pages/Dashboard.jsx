@@ -3,11 +3,22 @@ import { useAuth } from '../context/AuthContext.jsx'
 import { Link } from 'react-router-dom'
 import api from '../services/api.js'
 
-const QUICK_LINKS = [
-  { label: 'Upload New Judgment', path: '/upload',   icon: '⬆️',  desc: 'Add a new PDF judgment' },
-  { label: 'Browse All Cases',    path: '/cases',    icon: '📂',  desc: 'View & search all cases' },
-  { label: 'Hearing Calendar',    path: '/hearings', icon: '📅',  desc: 'Manage hearing schedule' },
-]
+// "Good morning / afternoon / evening" based on the time
+function greeting() {
+  const h = new Date().getHours()
+  if (h < 12) return 'Good morning'
+  if (h < 17) return 'Good afternoon'
+  return 'Good evening'
+}
+
+// How many days from today until a date
+function daysUntil(date) {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const d = new Date(date)
+  d.setHours(0, 0, 0, 0)
+  return Math.round((d - today) / (1000 * 60 * 60 * 24))
+}
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -35,106 +46,229 @@ export default function Dashboard() {
     load()
   }, [])
 
+  // ── Numbers for the cards ─────────────────────────────────────────────
   const summaries = cases.filter((c) => c.summary).length
   const citations = cases.reduce((sum, c) => sum + (c._count?.citations || 0), 0)
+  const summaryPercent = cases.length ? Math.round((summaries / cases.length) * 100) : 0
+  const pendingSummaries = cases.filter((c) => !c.summary && c.extractedText !== null).slice(0, 3)
+
+  // Cases grouped by category (Criminal, Civil, ...)
+  const byType = {}
+  cases.forEach((c) => {
+    const t = c.caseType || 'Other'
+    byType[t] = (byType[t] || 0) + 1
+  })
+  const typeList = Object.entries(byType).sort((a, b) => b[1] - a[1])
+
+  const nextHearing = hearings[0]
+  const nextDays = nextHearing ? daysUntil(nextHearing.date) : null
 
   const stats = [
-    { label: 'Total Cases',         value: totalCases,      color: 'text-primary-700', icon: '📁' },
-    { label: 'Summaries Generated', value: summaries,       color: 'text-green-700',   icon: '🤖' },
-    { label: 'Upcoming Hearings',   value: hearings.length, color: 'text-yellow-700',  icon: '📅' },
-    { label: 'Citations Found',     value: citations,       color: 'text-purple-700',  icon: '⚖️' },
+    { label: 'Total Cases', value: totalCases, icon: '📁', link: '/cases', note: 'Judgments uploaded' },
+    { label: 'AI Summaries', value: summaries, icon: '📜', link: '/cases', note: `${summaryPercent}% of cases summarized` },
+    { label: 'Upcoming Hearings', value: hearings.length, icon: '📅', link: '/hearings', note: nextHearing ? `Next in ${nextDays} day(s)` : 'None scheduled' },
+    { label: 'Citations Found', value: citations, icon: '⚖️', link: '/cases', note: 'Cases, Acts & Sections' },
   ]
+
+  const today = new Date().toLocaleDateString('en-IN', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  })
 
   return (
     <div className="space-y-6">
-      {/* Welcome */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          Welcome back, {user?.name?.split(' ')[0]} 👋
-        </h1>
-        <p className="mt-1 text-sm text-gray-500">
-          NyayaSaar — AI Court Judgment Summarizer for District Courts
-        </p>
-      </div>
+      {/* ── Welcome banner ─────────────────────────────────────────── */}
+      <div className="relative overflow-hidden rounded-2xl bg-court-navy text-white p-6 sm:p-8">
+        {/* soft decorative circles */}
+        <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-primary-600/30" />
+        <div className="absolute right-24 -bottom-20 w-48 h-48 rounded-full bg-court-gold/10" />
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map(({ label, value, color, icon }) => (
-          <div key={label} className="card flex items-center gap-4">
-            <span className="text-3xl">{icon}</span>
-            <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wide">{label}</p>
-              <p className={`text-2xl font-bold ${color}`}>{loading ? '—' : value}</p>
-            </div>
+        <div className="relative flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+          <div>
+            <p className="text-xs text-white/60">{today}</p>
+            <h1 className="text-3xl sm:text-4xl font-bold mt-1">
+              {greeting()}, <span className="text-court-gold">{user?.name?.split(' ')[0]}</span>
+            </h1>
+            <p className="text-sm text-white/70 mt-2 max-w-lg">
+              Summarize lengthy judgments, find citations and similar cases, and track your hearings.
+            </p>
+
           </div>
-        ))}
-      </div>
-
-      {/* Quick links */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-800 mb-3">Quick Actions</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {QUICK_LINKS.map(({ label, path, icon, desc }) => (
-            <Link key={path} to={path} className="card hover:shadow-md transition-shadow flex items-start gap-3 group">
-              <span className="text-2xl">{icon}</span>
-              <div>
-                <p className="font-medium text-gray-800 group-hover:text-primary-700 transition-colors">{label}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
-              </div>
+          <div className="flex flex-wrap gap-3 shrink-0">
+            <Link to="/upload" className="btn-primary bg-primary-600 hover:bg-primary-500 px-5">
+              ⬆️ Upload Judgment
             </Link>
-          ))}
+            <Link
+              to="/hearings"
+              className="inline-flex items-center px-5 py-2 rounded-lg text-sm font-medium border border-white/30 text-white hover:bg-white/10 transition-colors"
+            >
+              📅 Schedule Hearing
+            </Link>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Upcoming hearings */}
-        <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">Upcoming Hearings</h2>
-          <div className="card">
-            {hearings.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-8">No upcoming hearings.</p>
-            ) : (
-              <div className="divide-y divide-gray-100">
-                {hearings.slice(0, 5).map((h) => (
-                  <div key={h.id} className="py-2.5">
-                    <p className="text-sm font-medium text-gray-900">
-                      📅 {new Date(h.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      {h.time && ` • ${h.time}`}
+      {/* ── Stats ──────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map(({ label, value, icon, link, note }) => (
+          <Link
+            key={label}
+            to={link}
+            className="card p-5 hover:border-primary-300 hover:-translate-y-0.5 transition-all"
+          >
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-medium text-gray-500">{label}</p>
+              <div className="w-9 h-9 rounded-xl bg-primary-50 flex items-center justify-center text-lg">{icon}</div>
+            </div>
+            <p className="text-4xl font-bold text-court-navy mt-3 font-serif">{loading ? '—' : value}</p>
+            <p className="text-xs text-primary-700 mt-1">{loading ? '' : note}</p>
+          </Link>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* ── Recent cases ─────────────────────────────────────────── */}
+        <div className="card lg:col-span-2">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-court-navy">Recent Cases</h2>
+              <p className="text-xs text-gray-500">Your latest uploaded judgments</p>
+            </div>
+            <Link to="/cases" className="text-xs font-medium text-primary-700 hover:underline">View all →</Link>
+          </div>
+
+          {cases.length === 0 ? (
+            <div className="text-center py-12 rounded-xl border-2 border-dashed border-primary-100">
+              <p className="text-3xl">📄</p>
+              <p className="text-sm text-gray-600 mt-2">No cases yet</p>
+              <Link to="/upload" className="btn-primary mt-4 inline-flex">Upload your first judgment</Link>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {cases.slice(0, 5).map((c) => (
+                <Link
+                  key={c.id}
+                  to={`/cases/${c.id}`}
+                  className="py-3 flex items-center gap-4 hover:bg-primary-50/60 -mx-2 px-2 rounded-lg transition-colors"
+                >
+                  <div className="w-11 h-11 rounded-xl bg-primary-100 text-primary-800 flex items-center justify-center font-bold font-serif shrink-0">
+                    {c.title?.[0]?.toUpperCase() || '?'}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{c.title}</p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {c.caseNumber} · {c.court || 'Court not specified'}
                     </p>
-                    <Link to={`/cases/${h.case?.id}`} className="text-xs text-primary-700 hover:underline">
-                      {h.case?.title} ({h.case?.caseNumber})
+                  </div>
+                  <span className="hidden sm:inline badge badge-gray shrink-0">{c.caseType || 'Other'}</span>
+                  <span className={`badge shrink-0 ${c.summary ? 'bg-primary-100 text-primary-800' : 'bg-amber-50 text-amber-700'}`}>
+                    {c.summary ? '✓ Summarized' : 'Pending'}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ── Right column ─────────────────────────────────────────── */}
+        <div className="space-y-6">
+          {/* Upcoming hearings */}
+          <div className="card">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-court-navy">Upcoming Hearings</h2>
+              <Link to="/hearings" className="text-xs font-medium text-primary-700 hover:underline">View all →</Link>
+            </div>
+
+            {hearings.length === 0 ? (
+              <div className="text-center py-6">
+                <p className="text-sm text-gray-500">No upcoming hearings.</p>
+                <Link to="/hearings" className="text-xs text-primary-700 hover:underline">+ Schedule one</Link>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {hearings.slice(0, 3).map((h) => {
+                  const d = new Date(h.date)
+                  const left = daysUntil(h.date)
+                  return (
+                    <Link
+                      key={h.id}
+                      to={`/cases/${h.case?.id}`}
+                      className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-primary-200 transition-colors"
+                    >
+                      <div className="w-12 text-center rounded-lg bg-court-navy text-white py-1.5 shrink-0">
+                        <p className="text-[10px] uppercase text-court-gold">
+                          {d.toLocaleDateString('en-IN', { month: 'short' })}
+                        </p>
+                        <p className="text-lg font-bold leading-tight">{d.getDate()}</p>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-gray-900 truncate">{h.case?.title}</p>
+                        <p className="text-xs text-gray-500 truncate">
+                          {h.time || 'Time not set'}{h.location ? ` · ${h.location}` : ''}
+                        </p>
+                      </div>
+                      <span className="text-[10px] font-semibold text-primary-700 bg-primary-50 px-2 py-1 rounded-full shrink-0">
+                        {left === 0 ? 'Today' : left === 1 ? 'Tomorrow' : `${left}d`}
+                      </span>
                     </Link>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Summary progress + case types */}
+          <div className="card">
+            <h2 className="text-lg font-semibold text-court-navy">Overview</h2>
+
+            {/* Summary progress bar */}
+            <div className="mt-4">
+              <div className="flex justify-between text-xs mb-1">
+                <span className="text-gray-600">Cases summarized</span>
+                <span className="font-semibold text-court-navy">{summaries}/{cases.length}</span>
+              </div>
+              <div className="h-2 rounded-full bg-primary-50 overflow-hidden">
+                <div className="h-full rounded-full bg-primary-600" style={{ width: `${summaryPercent}%` }} />
+              </div>
+            </div>
+
+            {/* Cases by category */}
+            <p className="text-xs text-gray-600 mt-5 mb-2">Cases by category</p>
+            {typeList.length === 0 ? (
+              <p className="text-xs text-gray-400">No cases yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {typeList.map(([type, count]) => (
+                  <div key={type} className="flex items-center gap-2 text-xs">
+                    <span className="w-24 text-gray-600 truncate">{type}</span>
+                    <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-court-gold"
+                        style={{ width: `${(count / cases.length) * 100}%` }}
+                      />
+                    </div>
+                    <span className="w-6 text-right font-semibold text-court-navy">{count}</span>
                   </div>
                 ))}
               </div>
             )}
-            <Link to="/hearings" className="text-xs text-primary-700 hover:underline block mt-2">View all hearings →</Link>
-          </div>
-        </div>
 
-        {/* Recent cases */}
-        <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">Recent Cases</h2>
-          <div className="card">
-            {cases.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
-                <p className="font-medium">No cases yet</p>
-                <Link to="/upload" className="btn-primary mt-4 inline-flex">Upload Judgment</Link>
-              </div>
-            ) : (
-              <div className="divide-y divide-gray-100">
-                {cases.slice(0, 5).map((c) => (
-                  <Link key={c.id} to={`/cases/${c.id}`} className="py-2.5 flex items-center justify-between hover:bg-gray-50">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{c.title}</p>
-                      <p className="text-xs text-gray-500">{c.caseNumber} • {c.court || 'Court not specified'}</p>
-                    </div>
-                    <span className={`badge ${c.summary ? 'badge-green' : 'badge-gray'}`}>
-                      {c.summary ? 'Summarized' : 'No summary'}
-                    </span>
-                  </Link>
-                ))}
-              </div>
+            {/* Cases waiting for a summary */}
+            {pendingSummaries.length > 0 && (
+              <>
+                <p className="text-xs text-gray-600 mt-5 mb-2">Waiting for AI summary</p>
+                <div className="space-y-1">
+                  {pendingSummaries.map((c) => (
+                    <Link
+                      key={c.id}
+                      to={`/cases/${c.id}/summary`}
+                      className="flex items-center justify-between text-xs p-2 rounded-lg hover:bg-primary-50"
+                    >
+                      <span className="truncate text-gray-800">{c.title}</span>
+                      <span className="text-primary-700 font-medium shrink-0 ml-2">Generate →</span>
+                    </Link>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </div>
