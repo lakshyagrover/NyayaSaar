@@ -7,8 +7,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url       = env("DATABASE_URL")          // pooled link: used by the app
+  directUrl = env("DATABASE_URL_UNPOOLED") // direct link: used by prisma migrate
 }
 
 // ─── Users ──────────────────────────────────────────────────────────────────

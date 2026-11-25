@@ -33,7 +33,7 @@ export default function Login() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-court-navy">AI Court Summarizer</h1>
+          <h1 className="text-3xl font-bold text-court-navy">NyayaSaar</h1>
           <p className="mt-2 text-gray-500 text-sm">District Court Judgment Intelligence Platform</p>
         </div>
 

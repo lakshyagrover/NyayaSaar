@@ -33,7 +33,7 @@ export default function MainLayout({ children }) {
         <div className="flex items-center justify-between p-4 border-b border-white/10">
           {sidebarOpen && (
             <span className="font-serif text-sm font-bold text-court-gold leading-tight">
-              AI Court<br />Summarizer
+              NyayaSaar
             </span>
           )}
           <button

@@ -1,17 +1,15 @@
 import { NextResponse } from 'next/server'
 import path from 'path'
-import fs from 'fs'
 import crypto from 'crypto'
 import pdfParseModule from 'pdf-parse'
 const pdfParse = typeof pdfParseModule === 'function' ? pdfParseModule : (pdfParseModule?.default || pdfParseModule)
 import { verifyToken } from '../../../lib/auth.js'
 import { prisma } from '../../../lib/prisma.js'
+import { saveFile, deleteFile } from '../../../lib/storage.js'
 
 // Maximum file size: 20 MB in bytes
 const MAX_FILE_SIZE = 20 * 1024 * 1024
 
-// Secure storage directory outside of the public directory
-const STORAGE_DIR = path.join(process.cwd(), 'storage', 'uploads')
 
 /**
  * POST /api/upload
@@ -149,17 +147,9 @@ export async function POST(request) {
     }
 
     // ── 5. Secure File Storage ────────────────────────────────────────────
-    await fs.promises.mkdir(STORAGE_DIR, { recursive: true })
-
-    const fileId = crypto.randomUUID()
-    const serverFileName = `${fileId}.pdf`
-    const storagePath = path.join(STORAGE_DIR, serverFileName)
-
-    if (!path.resolve(storagePath).startsWith(STORAGE_DIR)) {
-      return NextResponse.json({ message: 'Invalid storage destination path.' }, { status: 400 })
-    }
-
-    await fs.promises.writeFile(storagePath, buffer)
+    // Random file name, saved online (Vercel Blob) or on the laptop (see lib/storage.js)
+    const serverFileName = `${crypto.randomUUID()}.pdf`
+    const storagePath = await saveFile(serverFileName, buffer)
     writtenFilePath = storagePath
 
     const sanitizedOriginalName = path.basename(originalName).replace(/[^\w.-]/g, '_')
@@ -302,8 +292,8 @@ export async function POST(request) {
     })
 
     // Database save worked, so now it is safe to delete the old PDF
-    if (oldFileToDelete && fs.existsSync(oldFileToDelete)) {
-      fs.promises.unlink(oldFileToDelete).catch(() => {})
+    if (oldFileToDelete) {
+      await deleteFile(oldFileToDelete)
     }
 
     return NextResponse.json(
@@ -328,7 +318,7 @@ export async function POST(request) {
     console.error('[POST /api/upload]', error)
 
     if (writtenFilePath) {
-      fs.promises.unlink(writtenFilePath).catch(() => {})
+      await deleteFile(writtenFilePath)
     }
 
     return NextResponse.json({ message: 'Internal server error while uploading PDF.' }, { status: 500 })

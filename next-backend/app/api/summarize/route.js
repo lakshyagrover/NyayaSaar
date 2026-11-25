@@ -3,6 +3,9 @@ import Groq from 'groq-sdk'
 import { verifyToken } from '../../../lib/auth.js'
 import { prisma } from '../../../lib/prisma.js'
 
+// Vercel: allow this route to run for up to 5 minutes (long judgments)
+export const maxDuration = 300
+
 // ─── Settings ────────────────────────────────────────────────────────────────
 const MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-120b'
 const SAFE_TPM = Number(process.env.GROQ_SAFE_TPM) || 6500 // tokens we allow per minute

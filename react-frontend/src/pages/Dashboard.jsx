@@ -53,7 +53,7 @@ export default function Dashboard() {
           Welcome back, {user?.name?.split(' ')[0]} 👋
         </h1>
         <p className="mt-1 text-sm text-gray-500">
-          AI Court Judgment Summarizer — District Court Intelligence Platform
+          NyayaSaar — AI Court Judgment Summarizer for District Courts
         </p>
       </div>
 

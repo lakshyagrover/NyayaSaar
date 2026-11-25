@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import fs from 'fs'
 import { verifyToken } from '../../../../lib/auth.js'
 import { prisma } from '../../../../lib/prisma.js'
+import { readFile } from '../../../../lib/storage.js'
 
 /**
  * GET /api/documents/[id]
@@ -36,12 +36,10 @@ export async function GET(request, { params }) {
       return NextResponse.json({ message: 'Document not found.' }, { status: 404 })
     }
 
-    // Verify physical file existence
-    if (!fs.existsSync(doc.storagePath)) {
+    const fileBuffer = await readFile(doc.storagePath)
+    if (!fileBuffer) {
       return NextResponse.json({ message: 'Document file missing from server storage.' }, { status: 404 })
     }
-
-    const fileBuffer = await fs.promises.readFile(doc.storagePath)
 
     return new NextResponse(fileBuffer, {
       status: 200,

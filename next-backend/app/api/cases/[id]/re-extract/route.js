@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import fs from 'fs'
 import pdfParseModule from 'pdf-parse'
 const pdfParse = typeof pdfParseModule === 'function' ? pdfParseModule : (pdfParseModule?.default || pdfParseModule)
 import { verifyToken } from '../../../../../lib/auth.js'
 import { prisma } from '../../../../../lib/prisma.js'
+import { readFile } from '../../../../../lib/storage.js'
 
 /**
  * POST /api/cases/[id]/re-extract
@@ -56,18 +56,13 @@ export async function POST(request, { params }) {
     }
 
     // ── 4. Verify file on disk ────────────────────────────────────────────
-    if (!fs.existsSync(doc.storagePath)) {
+    const buffer = await readFile(doc.storagePath)
+    if (!buffer) {
       return NextResponse.json(
-        {
-          message: 'Stored PDF file not found on disk storage.',
-          code: 'FILE_NOT_FOUND',
-        },
+        { message: 'Stored PDF file not found in storage.', code: 'FILE_NOT_FOUND' },
         { status: 404 },
       )
     }
-
-    // ── 5. Read buffer and extract text via pdf-parse ──────────────────────
-    const buffer = await fs.promises.readFile(doc.storagePath)
     let extractedText = null
     let hasExtractedText = false
     let extractionStatus = 'PENDING'
