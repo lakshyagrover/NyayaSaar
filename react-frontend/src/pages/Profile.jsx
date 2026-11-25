@@ -1,27 +1,76 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
+import api from '../services/api.js'
 
 export default function Profile() {
   const { user } = useAuth()
-  const [form, setForm]     = useState({ name: user?.name || '', email: user?.email || '' })
+
+  // Edit profile
+  const [form, setForm] = useState({ name: user?.name || '', email: user?.email || '' })
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState(null)
 
+  // Change password
+  const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
+  const [pwSaving, setPwSaving] = useState(false)
+  const [pwMessage, setPwMessage] = useState(null)
+
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
+  const handlePwChange = (e) => setPwForm({ ...pwForm, [e.target.name]: e.target.value })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
     setMessage(null)
-    // TODO: Call PUT /api/users/profile
-    setTimeout(() => {
-      setMessage({ type: 'success', text: 'Profile updated! (API not yet connected)' })
+    try {
+      await api.put('/users/profile', form)
+      setMessage({ type: 'success', text: 'Profile updated. Refresh the page to see the new name everywhere.' })
+    } catch (err) {
+      setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update profile.' })
+    } finally {
       setSaving(false)
-    }, 800)
+    }
   }
 
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault()
+    setPwMessage(null)
+
+    if (pwForm.newPassword !== pwForm.confirmPassword) {
+      setPwMessage({ type: 'error', text: 'New passwords do not match.' })
+      return
+    }
+
+    setPwSaving(true)
+    try {
+      const res = await api.post('/auth/change-password', {
+        currentPassword: pwForm.currentPassword,
+        newPassword: pwForm.newPassword,
+      })
+      setPwMessage({ type: 'success', text: res.data.message })
+      setPwForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
+    } catch (err) {
+      setPwMessage({ type: 'error', text: err.response?.data?.message || 'Failed to change password.' })
+    } finally {
+      setPwSaving(false)
+    }
+  }
+
+  const Message = ({ msg }) =>
+    msg ? (
+      <div
+        className={`mb-4 p-3 rounded-lg text-sm ${
+          msg.type === 'error'
+            ? 'bg-red-50 text-red-700 border border-red-200'
+            : 'bg-green-50 text-green-700 border border-green-200'
+        }`}
+      >
+        {msg.text}
+      </div>
+    ) : null
+
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
         <p className="text-sm text-gray-500 mt-1">Manage your account information.</p>
@@ -42,15 +91,7 @@ export default function Profile() {
       {/* Edit form */}
       <div className="card">
         <h2 className="font-semibold text-gray-800 mb-5">Edit Profile</h2>
-
-        {message && (
-          <div className={`mb-4 p-3 rounded-lg text-sm ${
-            message.type === 'error' ? 'bg-red-50 text-red-700 border border-red-200'
-                                     : 'bg-green-50 text-green-700 border border-green-200'
-          }`}>
-            {message.text}
-          </div>
-        )}
+        <Message msg={message} />
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -69,10 +110,35 @@ export default function Profile() {
         </form>
       </div>
 
-      {/* Change password placeholder */}
+      {/* Change password */}
       <div className="card">
-        <h2 className="font-semibold text-gray-800 mb-2">Change Password</h2>
-        <p className="text-sm text-gray-500">Password change will be enabled once the backend is connected.</p>
+        <h2 className="font-semibold text-gray-800 mb-5">Change Password</h2>
+        <Message msg={pwMessage} />
+
+        <form onSubmit={handlePasswordSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="currentPassword" className="form-label">Current Password</label>
+            <input id="currentPassword" name="currentPassword" type="password"
+              value={pwForm.currentPassword} onChange={handlePwChange}
+              required autoComplete="current-password" className="form-input" />
+          </div>
+          <div>
+            <label htmlFor="newPassword" className="form-label">New Password</label>
+            <input id="newPassword" name="newPassword" type="password" minLength={8}
+              value={pwForm.newPassword} onChange={handlePwChange}
+              required autoComplete="new-password" className="form-input" />
+            <p className="text-xs text-gray-400 mt-1">At least 8 characters.</p>
+          </div>
+          <div>
+            <label htmlFor="confirmPassword" className="form-label">Confirm New Password</label>
+            <input id="confirmPassword" name="confirmPassword" type="password"
+              value={pwForm.confirmPassword} onChange={handlePwChange}
+              required autoComplete="new-password" className="form-input" />
+          </div>
+          <button type="submit" disabled={pwSaving} className="btn-primary">
+            {pwSaving ? 'Changing…' : 'Change Password'}
+          </button>
+        </form>
       </div>
     </div>
   )

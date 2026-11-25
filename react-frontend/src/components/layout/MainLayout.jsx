@@ -22,12 +22,12 @@ export default function MainLayout({ children }) {
   }
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className="h-screen flex bg-court-cream overflow-hidden">
       {/* Sidebar */}
       <aside
         className={`${
           sidebarOpen ? 'w-64' : 'w-16'
-        } bg-court-navy text-white flex flex-col transition-all duration-300 ease-in-out shrink-0`}
+        } bg-court-navy text-white flex flex-col h-screen transition-all duration-300 ease-in-out shrink-0`}
       >
         {/* Logo / Toggle */}
         <div className="flex items-center justify-between p-4 border-b border-white/10">
@@ -46,7 +46,7 @@ export default function MainLayout({ children }) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 py-4 space-y-1 px-2">
+        <nav className="flex-1 py-4 space-y-1 px-2 overflow-y-auto">
           {NAV_ITEMS.map(({ label, path, icon }) => {
             const active = location.pathname === path || location.pathname.startsWith(path + '/')
             return (
@@ -85,7 +85,7 @@ export default function MainLayout({ children }) {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 h-screen overflow-y-auto">
         <div className="max-w-7xl mx-auto p-6">{children}</div>
       </main>
     </div>

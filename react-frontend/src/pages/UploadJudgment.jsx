@@ -110,163 +110,117 @@ export default function UploadJudgment() {
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 font-serif">Upload Judgment</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Upload a district court PDF judgment to extract full text and index legal metadata.
-          </p>
-        </div>
-        <Link to="/cases" className="btn-secondary text-xs">
+      <div>
+        <Link to="/cases" className="text-xs text-primary-700 hover:underline">
           ← All Cases
         </Link>
+        <h1 className="text-3xl font-bold text-court-navy mt-2">Upload Judgment</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Add a judgment PDF. We extract the text so you can generate an AI summary.
+        </p>
       </div>
 
-      <div className="card">
-        {/* Error Alert */}
-        {error && (
-          <div className="mb-5 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-2.5">
-            <span className="text-base shrink-0">⚠️</span>
-            <div className="flex-1">
-              <p className="font-semibold">Upload failed</p>
-              <p className="mt-0.5">{error}</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setError(null)}
-              className="text-red-500 hover:text-red-700 font-bold ml-2"
-            >
-              ✕
-            </button>
+      {/* Error Alert */}
+      {error && (
+        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-3">
+          <span className="text-base shrink-0">⚠️</span>
+          <div className="flex-1">
+            <p className="font-semibold">Upload failed</p>
+            <p className="mt-0.5">{error}</p>
           </div>
-        )}
+          <button type="button" onClick={() => setError(null)} className="text-red-500 hover:text-red-700 font-bold">
+            ✕
+          </button>
+        </div>
+      )}
 
-        {/* Success Alert */}
-        {result && (
-          <div className="mb-5 p-4 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="font-bold flex items-center gap-1.5 text-base">
-                ✅ Upload &amp; Extraction Successful!
-              </span>
-              <Link
-                to={`/cases/${result.case?.id}`}
-                className="btn-primary text-xs py-1 px-3"
-              >
-                Go to Case Now →
-              </Link>
-            </div>
-            <div className="text-xs bg-white/80 p-2.5 rounded border border-green-200">
-              <p>
-                <strong>Case Number:</strong> {result.case?.caseNumber}
-              </p>
-              <p>
-                <strong>Text Extraction Status:</strong>{' '}
-                {result.extraction?.hasExtractedText ? (
-                  <span className="text-green-700 font-semibold">
-                    {result.extraction.textLength.toLocaleString()} characters extracted
-                  </span>
-                ) : (
-                  <span className="text-amber-700 font-semibold">
-                    Scanned PDF detected (marked for OCR)
-                  </span>
-                )}
-              </p>
-              <p className="text-gray-500 mt-1 italic">{result.extraction?.message}</p>
-            </div>
-            <p className="text-xs text-green-700 animate-pulse font-medium">
-              {processingStep}
-            </p>
+      {/* Success Alert */}
+      {result && (
+        <div className="p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 text-sm">
+          <div className="flex items-center justify-between gap-3">
+            <p className="font-semibold">✅ Uploaded successfully</p>
+            <Link to={`/cases/${result.case?.id}`} className="btn-primary text-xs py-1.5 px-3">
+              Go to Case →
+            </Link>
           </div>
-        )}
+          <p className="mt-2 text-xs">
+            {result.extraction?.hasExtractedText
+              ? `${result.extraction.textLength.toLocaleString()} characters extracted.`
+              : 'Scanned PDF detected (no text layer found).'}
+          </p>
+          <p className="text-xs text-green-700 mt-1 animate-pulse">{processingStep}</p>
+        </div>
+      )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* PDF Drag & Drop / Selection Area */}
-          <div>
-            <label className="form-label font-semibold">
-              Judgment PDF File * <span className="text-xs font-normal text-gray-500">(Max 20 MB)</span>
-            </label>
-            <label
-              className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl transition-all cursor-pointer ${
-                file
-                  ? 'border-primary-500 bg-primary-50/40'
-                  : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50'
-              } ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
-            >
-              <div className="flex flex-col items-center gap-2 text-center p-4">
-                <span className="text-4xl">{file ? '📑' : '📄'}</span>
-                {file ? (
-                  <div>
-                    <p className="text-sm font-semibold text-primary-900">{file.name}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {formatFileSize(file.size)} • Click to replace file
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    <p className="text-sm font-medium text-gray-700">
-                      Click to browse or drop your judgment PDF here
-                    </p>
-                    <p className="text-xs text-gray-400">Standard PDF format with selectable or scanned text</p>
-                  </>
-                )}
-              </div>
-              <input
-                type="file"
-                accept=".pdf,application/pdf"
-                className="hidden"
-                disabled={uploading}
-                onChange={handleFileChange}
-              />
-            </label>
-          </div>
+      <form onSubmit={handleSubmit} className="card p-0 overflow-hidden">
+        {/* Step 1: PDF */}
+        <div className="p-6 border-b border-gray-100">
+          <h2 className="text-base font-semibold text-court-navy">1. Judgment PDF</h2>
+          <p className="text-xs text-gray-500 mb-4">PDF only, up to {MAX_SIZE_MB} MB.</p>
 
-          {/* Case Title */}
-          <div>
-            <label htmlFor="title" className="form-label font-semibold">
-              Case Title / Parties *
-            </label>
+          <label
+            className={`flex flex-col items-center justify-center w-full h-44 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
+              file
+                ? 'border-primary-400 bg-primary-50'
+                : 'border-gray-200 bg-gray-50 hover:border-primary-300 hover:bg-primary-50'
+            } ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
+          >
+            <div className="w-12 h-12 rounded-full bg-white border border-primary-100 flex items-center justify-center text-2xl mb-2">
+              {file ? '📑' : '📄'}
+            </div>
+            {file ? (
+              <>
+                <p className="text-sm font-semibold text-primary-800 px-4 text-center break-all">{file.name}</p>
+                <p className="text-xs text-gray-500 mt-1">{formatFileSize(file.size)} · Click to change</p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-medium text-gray-700">Click to choose a PDF</p>
+                <p className="text-xs text-gray-400 mt-1">or drag and drop it here</p>
+              </>
+            )}
             <input
-              id="title"
-              name="title"
-              value={form.title}
-              onChange={handleChange}
+              type="file"
+              accept=".pdf,application/pdf"
+              className="hidden"
               disabled={uploading}
-              required
-              className="form-input"
-              placeholder="e.g. State vs. Ramesh Kumar &amp; Ors."
+              onChange={handleFileChange}
+            />
+          </label>
+        </div>
+
+        {/* Step 2: Case details */}
+        <div className="p-6 space-y-4">
+          <div>
+            <h2 className="text-base font-semibold text-court-navy">2. Case Details</h2>
+            <p className="text-xs text-gray-500">Fields marked * are required.</p>
+          </div>
+
+          <div>
+            <label htmlFor="title" className="form-label">Case Title / Parties *</label>
+            <input
+              id="title" name="title" value={form.title} onChange={handleChange}
+              disabled={uploading} required className="form-input"
+              placeholder="e.g. State vs. Ramesh Kumar & Ors."
             />
           </div>
 
-          {/* Case Number & Case Type */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="caseNumber" className="form-label font-semibold">
-                Case Number / FIR No. *
-              </label>
+              <label htmlFor="caseNumber" className="form-label">Case Number / FIR No. *</label>
               <input
-                id="caseNumber"
-                name="caseNumber"
-                value={form.caseNumber}
-                onChange={handleChange}
-                disabled={uploading}
-                required
-                className="form-input font-mono text-xs"
+                id="caseNumber" name="caseNumber" value={form.caseNumber} onChange={handleChange}
+                disabled={uploading} required className="form-input"
                 placeholder="e.g. CRL-A-2024-0418"
               />
             </div>
             <div>
-              <label htmlFor="caseType" className="form-label font-semibold">
-                Case Category
-              </label>
+              <label htmlFor="caseType" className="form-label">Case Category</label>
               <select
-                id="caseType"
-                name="caseType"
-                value={form.caseType}
-                onChange={handleChange}
-                disabled={uploading}
-                className="form-input"
+                id="caseType" name="caseType" value={form.caseType} onChange={handleChange}
+                disabled={uploading} className="form-input"
               >
                 <option value="Criminal">Criminal</option>
                 <option value="Civil">Civil</option>
@@ -276,73 +230,45 @@ export default function UploadJudgment() {
                 <option value="Revenue">Revenue</option>
               </select>
             </div>
-          </div>
-
-          {/* Judgment Date & Court Jurisdiction */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="date" className="form-label font-semibold">
-                Judgment Date
-              </label>
+              <label htmlFor="date" className="form-label">Judgment Date</label>
               <input
-                id="date"
-                name="date"
-                type="date"
-                value={form.date}
-                onChange={handleChange}
-                disabled={uploading}
-                className="form-input"
+                id="date" name="date" type="date" value={form.date} onChange={handleChange}
+                disabled={uploading} className="form-input"
               />
             </div>
             <div>
-              <label htmlFor="court" className="form-label font-semibold">
-                Court Jurisdiction
-              </label>
+              <label htmlFor="court" className="form-label">Court</label>
               <input
-                id="court"
-                name="court"
-                value={form.court}
-                onChange={handleChange}
-                disabled={uploading}
-                className="form-input"
+                id="court" name="court" value={form.court} onChange={handleChange}
+                disabled={uploading} className="form-input"
                 placeholder="e.g. Tis Hazari District Court, Delhi"
               />
             </div>
           </div>
+        </div>
 
-          {/* Processing Indicator */}
-          {uploading && (
-            <div className="p-4 bg-primary-50 rounded-lg border border-primary-200 flex items-center gap-3">
-              <div className="w-5 h-5 border-2 border-primary-700 border-t-transparent rounded-full animate-spin shrink-0" />
-              <div className="flex-1">
-                <p className="text-xs font-semibold text-primary-900">{processingStep}</p>
-                <p className="text-xs text-primary-700 mt-0.5">
-                  Please keep this page open while the PDF is parsed and registered.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex gap-3 pt-2">
-            <button
-              type="submit"
-              disabled={uploading || !file}
-              className="btn-primary flex-1 py-2.5 font-semibold text-sm"
-            >
-              {uploading ? 'Processing Judgment…' : 'Upload & Extract Judgment'}
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/cases')}
-              disabled={uploading}
-              className="btn-secondary"
-            >
-              Cancel
-            </button>
+        {/* Processing Indicator */}
+        {uploading && (
+          <div className="mx-6 mb-4 p-3 bg-primary-50 rounded-lg border border-primary-100 flex items-center gap-3">
+            <div className="w-5 h-5 border-2 border-primary-700 border-t-transparent rounded-full animate-spin shrink-0" />
+            <p className="text-xs font-medium text-primary-800">{processingStep}</p>
           </div>
-        </form>
-      </div>
+        )}
+
+        {/* Buttons */}
+        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+          <button
+            type="button" onClick={() => navigate('/cases')} disabled={uploading}
+            className="btn-secondary"
+          >
+            Cancel
+          </button>
+          <button type="submit" disabled={uploading || !file} className="btn-primary px-6">
+            {uploading ? 'Processing…' : 'Upload & Extract'}
+          </button>
+        </div>
+      </form>
     </div>
   )
 }

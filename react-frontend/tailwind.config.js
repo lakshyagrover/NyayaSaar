@@ -7,24 +7,27 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Brand palette for the Court Summarizer
+        // NyayaSaar theme: "Maroon & Plum"
+        // To go back to the old blue theme, use:
+        // 50 #eff6ff, 100 #dbeafe, 200 #bfdbfe, 300 #93c5fd, 400 #60a5fa, 500 #3b82f6,
+        // 600 #2563eb, 700 #1d4ed8, 800 #1e40af, 900 #1e3a8a, 950 #172554, navy #0f2044
         primary: {
-          50:  '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
-          950: '#172554',
+          50: '#fcf2f4',
+          100: '#f6dfe5',
+          200: '#ecbfca',
+          300: '#db92a3',
+          400: '#c4647c',
+          500: '#ad4560',
+          600: '#94344e',
+          700: '#7d2a42',
+          800: '#672438',
+          900: '#531f2f',
+          950: '#33101c',
         },
         court: {
-          navy:  '#0f2044',
-          gold:  '#c9a84c',
-          cream: '#faf7f0',
+          navy:  '#2f1628',
+          gold:  '#e6bfa7',
+          cream: '#fcf8f9',
         },
       },
       fontFamily: {
