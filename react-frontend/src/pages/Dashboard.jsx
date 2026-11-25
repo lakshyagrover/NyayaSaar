@@ -1,12 +1,7 @@
+import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { Link } from 'react-router-dom'
-
-const STAT_CARDS = [
-  { label: 'Total Cases',       value: '—', color: 'text-primary-700', icon: '📁' },
-  { label: 'Summaries Generated', value: '—', color: 'text-green-700',   icon: '🤖' },
-  { label: 'Upcoming Hearings', value: '—', color: 'text-yellow-700',  icon: '📅' },
-  { label: 'Citations Found',   value: '—', color: 'text-purple-700',  icon: '⚖️'  },
-]
+import api from '../services/api.js'
 
 const QUICK_LINKS = [
   { label: 'Upload New Judgment', path: '/upload',   icon: '⬆️',  desc: 'Add a new PDF judgment' },
@@ -16,6 +11,39 @@ const QUICK_LINKS = [
 
 export default function Dashboard() {
   const { user } = useAuth()
+  const [cases, setCases] = useState([])
+  const [totalCases, setTotalCases] = useState(0)
+  const [hearings, setHearings] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [cRes, hRes] = await Promise.all([
+          api.get('/cases?limit=100'),
+          api.get('/hearings?upcoming=true'),
+        ])
+        setCases(cRes.data.cases || [])
+        setTotalCases(cRes.data.pagination?.total || 0)
+        setHearings(hRes.data.hearings || [])
+      } catch (err) {
+        console.error('Dashboard load failed:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
+
+  const summaries = cases.filter((c) => c.summary).length
+  const citations = cases.reduce((sum, c) => sum + (c._count?.citations || 0), 0)
+
+  const stats = [
+    { label: 'Total Cases',         value: totalCases,      color: 'text-primary-700', icon: '📁' },
+    { label: 'Summaries Generated', value: summaries,       color: 'text-green-700',   icon: '🤖' },
+    { label: 'Upcoming Hearings',   value: hearings.length, color: 'text-yellow-700',  icon: '📅' },
+    { label: 'Citations Found',     value: citations,       color: 'text-purple-700',  icon: '⚖️' },
+  ]
 
   return (
     <div className="space-y-6">
@@ -31,12 +59,12 @@ export default function Dashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {STAT_CARDS.map(({ label, value, color, icon }) => (
+        {stats.map(({ label, value, color, icon }) => (
           <div key={label} className="card flex items-center gap-4">
             <span className="text-3xl">{icon}</span>
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wide">{label}</p>
-              <p className={`text-2xl font-bold ${color}`}>{value}</p>
+              <p className={`text-2xl font-bold ${color}`}>{loading ? '—' : value}</p>
             </div>
           </div>
         ))}
@@ -58,14 +86,57 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Placeholder: recent activity */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-800 mb-3">Recent Cases</h2>
-        <div className="card text-center py-12 text-gray-400">
-          <p className="text-4xl mb-3">📂</p>
-          <p className="font-medium">No cases yet</p>
-          <p className="text-sm mt-1">Upload your first judgment to get started.</p>
-          <Link to="/upload" className="btn-primary mt-4 inline-flex">Upload Judgment</Link>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Upcoming hearings */}
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800 mb-3">Upcoming Hearings</h2>
+          <div className="card">
+            {hearings.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-8">No upcoming hearings.</p>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {hearings.slice(0, 5).map((h) => (
+                  <div key={h.id} className="py-2.5">
+                    <p className="text-sm font-medium text-gray-900">
+                      📅 {new Date(h.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      {h.time && ` • ${h.time}`}
+                    </p>
+                    <Link to={`/cases/${h.case?.id}`} className="text-xs text-primary-700 hover:underline">
+                      {h.case?.title} ({h.case?.caseNumber})
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            )}
+            <Link to="/hearings" className="text-xs text-primary-700 hover:underline block mt-2">View all hearings →</Link>
+          </div>
+        </div>
+
+        {/* Recent cases */}
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800 mb-3">Recent Cases</h2>
+          <div className="card">
+            {cases.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                <p className="font-medium">No cases yet</p>
+                <Link to="/upload" className="btn-primary mt-4 inline-flex">Upload Judgment</Link>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {cases.slice(0, 5).map((c) => (
+                  <Link key={c.id} to={`/cases/${c.id}`} className="py-2.5 flex items-center justify-between hover:bg-gray-50">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{c.title}</p>
+                      <p className="text-xs text-gray-500">{c.caseNumber} • {c.court || 'Court not specified'}</p>
+                    </div>
+                    <span className={`badge ${c.summary ? 'badge-green' : 'badge-gray'}`}>
+                      {c.summary ? 'Summarized' : 'No summary'}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

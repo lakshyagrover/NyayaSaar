@@ -249,10 +249,10 @@ async function runExtraction(caseRecord) {
   // Run regex-based extraction
   const extracted = extractCitationsFromText(text)
 
-  // Idempotent: delete existing citations and re-insert fresh results.
-  // This prevents duplicates if the endpoint is called multiple times.
+  // Idempotent: delete old regex citations and re-insert fresh results.
+  // Citations found by the AI summary (type 'ai_detected') are kept.
   await prisma.$transaction(async (tx) => {
-    await tx.citation.deleteMany({ where: { caseId: caseRecord.id } })
+    await tx.citation.deleteMany({ where: { caseId: caseRecord.id, NOT: { type: 'ai_detected' } } })
 
     if (extracted.length > 0) {
       await tx.citation.createMany({

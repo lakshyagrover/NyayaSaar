@@ -4,7 +4,7 @@ import axios from 'axios'
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
   withCredentials: true,
-  timeout: 300000,
+  timeout: 1800000, // 30 minutes: long judgments take time to summarize
   headers: {
     'Content-Type': 'application/json',
   },

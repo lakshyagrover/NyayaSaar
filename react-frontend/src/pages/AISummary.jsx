@@ -81,7 +81,7 @@ export default function AISummary() {
         setSuccessMsg(
           res.data.isExisting
             ? 'Existing summary loaded.'
-            : 'AI Summary generated successfully using Google Gemini.'
+            : 'AI Summary generated successfully.'
         )
       }
     } catch (err) {
@@ -103,7 +103,9 @@ export default function AISummary() {
     )
   }
 
-  const hasExtractedText = Boolean(caseData?.extractedText?.trim())
+  const hasExtractedText = Boolean(
+    caseData?.extractedText?.trim() || caseData?.documents?.some((d) => d.extractedText?.trim())
+  )
 
   return (
     <div className="space-y-6">
@@ -130,7 +132,7 @@ export default function AISummary() {
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="badge badge-blue">Gemini AI</span>
+              <span className="badge badge-blue">Groq AI</span>
               <span className="badge badge-gray">{caseData?.caseNumber}</span>
               {hasExtractedText ? (
                 <span className="badge badge-green">✓ Extracted Text Available</span>
@@ -162,7 +164,7 @@ export default function AISummary() {
                 onClick={() => handleGenerate(true)}
                 disabled={generating || !hasExtractedText}
                 className="btn-secondary text-xs flex items-center gap-1.5"
-                title="Regenerate this summary with Gemini AI"
+                title="Regenerate this summary"
               >
                 {generating ? 'Regenerating…' : '🔄 Regenerate Summary'}
               </button>
@@ -216,7 +218,7 @@ export default function AISummary() {
                 {errorCode === 'NO_EXTRACTED_TEXT'
                   ? 'Digital Text Layer Missing (Scanned PDF)'
                   : errorCode === 'API_KEY_NOT_CONFIGURED'
-                  ? 'Gemini API Key Required'
+                  ? 'Groq API Key Required'
                   : 'AI Summarization Notice'}
               </h3>
               <p className="mt-1 text-xs leading-relaxed">{error}</p>
@@ -234,7 +236,7 @@ export default function AISummary() {
 
               {errorCode === 'API_KEY_NOT_CONFIGURED' && (
                 <p className="mt-2 text-xs font-mono bg-purple-100/70 p-2 rounded text-purple-800">
-                  Add GEMINI_API_KEY=your_key to next-backend/.env and restart the backend server.
+                  Add GROQ_API_KEY=your_key to next-backend/.env and restart the backend server.
                 </p>
               )}
             </div>
@@ -255,9 +257,9 @@ export default function AISummary() {
       {generating && (
         <div className="card text-center py-12 border-primary-200 bg-primary-50/20">
           <div className="w-10 h-10 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <h2 className="text-lg font-bold text-gray-900">Analyzing Judgment with Gemini AI</h2>
+          <h2 className="text-lg font-bold text-gray-900">Analyzing Judgment with AI</h2>
           <p className="text-xs text-gray-600 mt-1 max-w-md mx-auto">
-            Extracting facts, legal issues, petitioner and respondent arguments, ratio decidendi, and operative orders…
+            Extracting facts, legal issues, arguments, ratio decidendi, and operative orders… Long judgments can take a few minutes. Please keep this page open.
           </p>
         </div>
       )}
@@ -275,7 +277,7 @@ export default function AISummary() {
                   'This summary is an AI-generated study aid designed for legal research and educational reference. It does not constitute formal legal advice.'}
               </p>
               <p className="text-[11px] text-blue-600 mt-1">
-                Model: <span className="font-mono font-medium">{summary.model || 'gemini-3.5-flash'}</span> • Generated on:{' '}
+                Model: <span className="font-mono font-medium">{summary.model || 'openai/gpt-oss-120b'}</span> • Generated on:{' '}
                 {summary.generatedAt ? new Date(summary.generatedAt).toLocaleString() : 'Just now'}
               </p>
             </div>
@@ -400,7 +402,7 @@ export default function AISummary() {
           <span className="text-4xl block mb-3">⚖️</span>
           <h2 className="text-lg font-bold text-gray-900">No Summary Generated Yet</h2>
           <p className="text-xs text-gray-500 mt-1 max-w-md mx-auto">
-            Generate an AI-powered structured case brief highlighting facts, issues, arguments, reasoning, and final decisions using Gemini.
+            Generate an AI-powered structured case brief highlighting facts, issues, arguments, reasoning, and final decisions using AI.
           </p>
 
           <div className="mt-6">

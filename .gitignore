@@ -6,3 +6,6 @@ dist/
 # SQLite database files
 **/*.db
 **/*.sqlite
+
+# Local backups
+_backup_before_changes/

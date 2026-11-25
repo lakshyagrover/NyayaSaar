@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server'
 import { verifyToken } from '../../../lib/auth.js'
+import { prisma } from '../../../lib/prisma.js'
 
 /**
- * GET /api/hearings   — List hearings for the authenticated user
- * POST /api/hearings  — Schedule a new hearing
+ * GET  /api/hearings            — List hearings of the logged-in user
+ *      ?upcoming=true           — only hearings from today onwards
+ *      ?caseId=...              — only hearings of one case
+ * POST /api/hearings            — Schedule a new hearing
  */
 
 export async function GET(request) {
@@ -11,8 +14,24 @@ export async function GET(request) {
     const user = await verifyToken(request)
     if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
 
-    // TODO: const hearings = await prisma.hearing.findMany({ where: { userId: user.id }, orderBy: { date: 'asc' } })
-    return NextResponse.json({ hearings: [], message: 'Hearings endpoint ready — DB not yet connected.' })
+    const { searchParams } = new URL(request.url)
+    const where = { userId: user.id }
+
+    if (searchParams.get('caseId')) where.caseId = searchParams.get('caseId')
+
+    if (searchParams.get('upcoming') === 'true') {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      where.date = { gte: today }
+    }
+
+    const hearings = await prisma.hearing.findMany({
+      where,
+      orderBy: { date: 'asc' },
+      include: { case: { select: { id: true, title: true, caseNumber: true, court: true } } },
+    })
+
+    return NextResponse.json({ hearings, count: hearings.length })
   } catch (error) {
     console.error('[GET /api/hearings]', error)
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
@@ -24,18 +43,37 @@ export async function POST(request) {
     const user = await verifyToken(request)
     if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
 
-    const body = await request.json()
+    const body = await request.json().catch(() => ({}))
     const { caseId, date, time, location, notes } = body
 
     if (!caseId || !date) {
       return NextResponse.json({ message: 'caseId and date are required.' }, { status: 400 })
     }
 
-    // TODO: const hearing = await prisma.hearing.create({ data: { caseId, date, time, location, notes, userId: user.id } })
-    return NextResponse.json(
-      { message: 'Hearing creation ready — DB not yet connected.', data: body },
-      { status: 201 },
-    )
+    const hearingDate = new Date(date)
+    if (isNaN(hearingDate.getTime())) {
+      return NextResponse.json({ message: 'Invalid hearing date.' }, { status: 400 })
+    }
+
+    // The case must belong to the logged-in user
+    const caseRecord = await prisma.case.findFirst({ where: { id: caseId, userId: user.id } })
+    if (!caseRecord) {
+      return NextResponse.json({ message: 'Case not found or you do not have permission.' }, { status: 404 })
+    }
+
+    const hearing = await prisma.hearing.create({
+      data: {
+        caseId,
+        userId: user.id,
+        date: hearingDate,
+        time: time || null,
+        location: location || null,
+        notes: notes || null,
+      },
+      include: { case: { select: { id: true, title: true, caseNumber: true, court: true } } },
+    })
+
+    return NextResponse.json({ message: 'Hearing scheduled successfully.', hearing }, { status: 201 })
   } catch (error) {
     console.error('[POST /api/hearings]', error)
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
