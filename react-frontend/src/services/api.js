@@ -26,10 +26,12 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       const url = error.config?.url || ''
 
+      // Do not redirect on login/register - the page must show the error message
       if (
         !url.includes('/summarize') &&
         !url.includes('/similar') &&
-        !url.includes('/citations')
+        !url.includes('/citations') &&
+        !url.includes('/auth/')
       ) {
         localStorage.removeItem('token')
         window.location.href = '/login'

@@ -22,6 +22,7 @@ const STORAGE_DIR = path.join(process.cwd(), 'storage', 'uploads')
  */
 export async function POST(request) {
   let writtenFilePath = null
+  let oldFileToDelete = null
 
   try {
     // ── 1. Authentication ──────────────────────────────────────────────────
@@ -207,9 +208,9 @@ export async function POST(request) {
 
         const existingDoc = c.documents?.[0]
         if (existingDoc) {
-          // Clean up old file if different
-          if (existingDoc.storagePath && existingDoc.storagePath !== storagePath && fs.existsSync(existingDoc.storagePath)) {
-            fs.promises.unlink(existingDoc.storagePath).catch(() => {})
+          // Remember the old file - we delete it only after the database save succeeds
+          if (existingDoc.storagePath && existingDoc.storagePath !== storagePath) {
+            oldFileToDelete = existingDoc.storagePath
           }
           d = await tx.document.update({
             where: { id: existingDoc.id },
@@ -299,6 +300,11 @@ export async function POST(request) {
 
       return [c, d]
     })
+
+    // Database save worked, so now it is safe to delete the old PDF
+    if (oldFileToDelete && fs.existsSync(oldFileToDelete)) {
+      fs.promises.unlink(oldFileToDelete).catch(() => {})
+    }
 
     return NextResponse.json(
       {

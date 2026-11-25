@@ -7,6 +7,7 @@ export default function Login() {
   const navigate      = useNavigate()
   const [form, setForm]       = useState({ email: '', password: '' })
   const [error, setError]     = useState('')
+  const [notRegistered, setNotRegistered] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
@@ -14,12 +15,14 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setNotRegistered(false)
     setLoading(true)
     try {
       await login(form.email, form.password)
       navigate('/dashboard')
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please try again.')
+      setNotRegistered(err.response?.data?.code === 'USER_NOT_FOUND')
     } finally {
       setLoading(false)
     }
@@ -40,6 +43,13 @@ export default function Login() {
           {error && (
             <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
               {error}
+              {notRegistered && (
+                <div className="mt-2">
+                  <Link to="/register" className="font-semibold underline">
+                    Create an account →
+                  </Link>
+                </div>
+              )}
             </div>
           )}
 

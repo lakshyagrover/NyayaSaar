@@ -93,7 +93,8 @@ export async function POST(request, { params }) {
     }
 
     // ── 6. Update Document and Case in SQLite (atomic transaction) ────────
-    const [updatedCase, updatedDoc] = await prisma.$transaction([
+    // Note: the order here must match the order of the two updates below (document first, then case)
+    const [updatedDoc, updatedCase] = await prisma.$transaction([
       prisma.document.update({
         where: { id: doc.id },
         data: {

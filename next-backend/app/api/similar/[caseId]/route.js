@@ -32,6 +32,9 @@ const STOP_WORDS = new Set([
   'plaintiff', 'versus', 'vs', 'writ', 'petition', 'order', 'dated',
   'honourable', 'hon', 'ble', 'learned', 'counsel', 'court', 'judge',
   'bench', 'para', 'page',
+  // very common judgment words that do not tell us the topic
+  'case', 'cases', 'high', 'supreme', 'against', 'public', 'present', 'made', 'passed',
+  'per', 'also', 'one', 'two', 'can', 'out', 'any', 'judgment', 'appeal', 'appeals',
 ])
 
 /** Tokenise text into lowercase words, removing stop-words and very short tokens */
@@ -40,7 +43,7 @@ function tokenise(text) {
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, ' ')  // remove punctuation
     .split(/\s+/)
-    .filter((w) => w.length >= 3 && !STOP_WORDS.has(w))
+    .filter((w) => w.length >= 3 && !STOP_WORDS.has(w) && !/^\d+$/.test(w)) // skip numbers like 000, 2024
 }
 
 /** Count how many times each token appears (term frequency map) */

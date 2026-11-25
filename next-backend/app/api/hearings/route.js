@@ -55,6 +55,12 @@ export async function POST(request) {
       return NextResponse.json({ message: 'Invalid hearing date.' }, { status: 400 })
     }
 
+    // Stop typing mistakes like year 20225
+    const year = hearingDate.getFullYear()
+    if (year < 1950 || year > 2100) {
+      return NextResponse.json({ message: 'Please enter a valid year (between 1950 and 2100).' }, { status: 400 })
+    }
+
     // The case must belong to the logged-in user
     const caseRecord = await prisma.case.findFirst({ where: { id: caseId, userId: user.id } })
     if (!caseRecord) {

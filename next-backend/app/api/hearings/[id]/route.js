@@ -28,6 +28,9 @@ export async function PUT(request, { params }) {
     if (body.date) {
       const d = new Date(body.date)
       if (isNaN(d.getTime())) return NextResponse.json({ message: 'Invalid date.' }, { status: 400 })
+      if (d.getFullYear() < 1950 || d.getFullYear() > 2100) {
+        return NextResponse.json({ message: 'Please enter a valid year (between 1950 and 2100).' }, { status: 400 })
+      }
       data.date = d
     }
     if (body.time !== undefined) data.time = body.time || null

@@ -146,7 +146,7 @@ export default function HearingCalendar() {
           </div>
           <div>
             <label className="form-label">Date *</label>
-            <input type="date" name="date" value={form.date} onChange={handleChange} className="form-input" />
+            <input type="date" name="date" min="1950-01-01" max="2100-12-31" value={form.date} onChange={handleChange} className="form-input" />
           </div>
           <div>
             <label className="form-label">Time</label>

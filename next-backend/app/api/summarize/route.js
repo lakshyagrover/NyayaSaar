@@ -157,6 +157,8 @@ function errorResponse(error) {
 const SYSTEM_PROMPT = `You are a legal assistant for Indian district courts.
 Use ONLY the judgment text given to you. Never invent facts, dates, amounts, sections or case names.
 Never present a party's argument as the court's finding.
+If the court says an argument "cannot be accepted", "is rejected" or "has no merit", that argument LOST -
+never write it as the court's view anywhere in the summary.
 Judgments often discuss other cases. Facts and orders of a cited case are NOT facts of this case.
 If something is truly not in the text, write exactly: "${FALLBACK}"
 
@@ -192,10 +194,14 @@ legalIssues: a numbered list of the questions the court decided. Most judgments 
 petitionerArguments: the main arguments of the petitioner/appellant, including cases they relied on.
 respondentArguments: the main arguments of the respondent, including cases they relied on. If none are stated, describe that side's
   stand from the text (for example, it supported or did not oppose the petition).
-courtReasoning: how this court reasoned, with paragraph numbers where given.
-finalDecision: the final order of the court that delivered THIS judgment - start with whether the
-  appeals/petitions were allowed or dismissed, then
-  which court's order was set aside, and which order was restored. Include any guidelines laid down.
+courtReasoning: how this court reasoned. Use paragraph numbers exactly as printed in the judgment
+  (e.g. "8." at the start of a paragraph) - never guess a paragraph number. Do not add reasoning
+  the court did not give. Every judgment gives reasons, so never use the fallback for this field.
+finalDecision: the final order of the court that delivered THIS judgment. Use the court's own words for
+  the result ("allowed", "dismissed", "disposed of", "disposed of with modification") - do not change
+  "disposed of" into "allowed". Then say
+  which court's order was set aside, modified or left undisturbed, and which order was restored.
+  Include every direction given (deposits, transfer of money, conditions) and any guidelines laid down.
 legalPrinciples: a numbered list of the principles this judgment applied or laid down, with paragraph
   numbers. Every judgment applies at least one principle, so never use the fallback for this field.
   Use the court's own narrow terms and keep any conditions (words like "may", "where", "if",
@@ -206,7 +212,9 @@ Also add "citations": an array of cases cited in the judgment (max 10).
 Before answering, check:
 1. Does each order belong to the right court?
 2. Is each party's position (who claimed what, who pays whom) stated correctly?
-3. Are legalIssues and legalPrinciples filled in from the judgment?`
+3. Are legalIssues and legalPrinciples filled in from the judgment?
+4. When the judgment quotes a statute, do not explain the statute yourself - only report what the court said about it.
+5. Does finalDecision agree with what the court held in its reasoning? Never state the opposite of the court's finding.`
 
 // ─── GET /api/summarize?caseId=... (load saved summary) ──────────────────────
 export async function GET(request) {
@@ -343,6 +351,16 @@ export async function POST(request) {
     }
 
       source = `NOTES:\n${notes.join('\n\n')}`
+
+      // The last page of a judgment has the final order and the judges' names.
+      // Notes can miss these, so we also send the real last part of the judgment.
+      for (const size of [3000, 1500]) {
+        const ending = `\n\nEXACT LAST PART OF THE JUDGMENT (final order and judges' names):\n${text.slice(-size)}`
+        if (estimateTokens(SYSTEM_PROMPT + FINAL_PROMPT + metadata + source + ending, 1800) <= SAFE_TPM) {
+          source += ending
+          break
+        }
+      }
     }
 
     // 8. Write the final 8-section summary
@@ -392,12 +410,14 @@ export async function POST(request) {
     //     and are not already saved (no duplicates)
     const aiCitations = Array.isArray(data.citations) ? data.citations : []
     const existing = new Set(caseRecord.citations.map((c) => c.citation.toLowerCase()))
-    const lowerText = text.toLowerCase()
+    // compare with all spaces and line breaks squeezed, so "State of\nJharkhand" still matches
+    const squeeze = (str) => str.toLowerCase().replace(/\s+/g, ' ')
+    const lowerText = squeeze(text)
 
     const newCitations = aiCitations
       .filter((c) => typeof c === 'string' && c.trim().length > 3)
       .map((c) => c.trim())
-      .filter((c) => lowerText.includes(c.toLowerCase()) && !existing.has(c.toLowerCase()))
+      .filter((c) => lowerText.includes(squeeze(c)) && !existing.has(c.toLowerCase()))
       .slice(0, 10)
 
     if (newCitations.length > 0) {

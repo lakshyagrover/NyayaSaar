@@ -53,7 +53,7 @@ const CITATION_PATTERNS = [
   // Named Acts with year — only match if it ends with Act/Code/Rules/Ordinance
   // and has a 4-digit year. This avoids false positives from plain sentences.
   {
-    regex: /\b(?:the\s+)?[A-Z][A-Za-z ]{2,55}(?:Act|Code|Ordinance|Regulation|Rules),?\s+\d{4}\b/g,
+    regex: /\b(?:the\s+)?[A-Z][A-Za-z ]{2,55}(?:Act|Code|Ordinance|Regulation|Rules|Sanhita),?\s+\d{4}\b/g,
     type: 'statute',
   },
 
@@ -61,7 +61,7 @@ const CITATION_PATTERNS = [
 
   // Section references: "Section 302", "Section 138 of the NI Act", "Sections 420 and 406 IPC"
   {
-    regex: /\bS(?:ections?|ec\.?)\s+\d+[A-Z]?(?:\s*(?:,|and|&|\/|\(|\)|\s)\s*\d+[A-Z]?)*(?:\s+of\s+(?:the\s+)?[A-Z][A-Za-z ]{1,40}(?:Act|Code|CPC|CrPC|IPC|NI Act|PC|MV Act)?)?/gi,
+    regex: /\bS(?:ections?|ec\.?)\s+\d+[A-Z]?(?:\([0-9a-z]+\))*(?:\s*(?:,|and|&|\/)\s*\d+[A-Z]?(?:\([0-9a-z]+\))*)*(?:\s+of\s+(?:the\s+)?[A-Z][A-Za-z ]{1,40}?(?:Act|Code|CPC|CrPC|IPC)\b)?/g,
     type: 'section',
   },
 
@@ -246,8 +246,12 @@ async function runExtraction(caseRecord) {
     )
   }
 
+  // PDF text has line breaks and special spaces inside names ("Prevention   of\nCorruption").
+  // Turn them all into single normal spaces so the patterns can match.
+  const cleanText = text.replace(/\u00ad/g, '').replace(/\s+/g, ' ')
+
   // Run regex-based extraction
-  const extracted = extractCitationsFromText(text)
+  const extracted = extractCitationsFromText(cleanText)
 
   // Idempotent: delete old regex citations and re-insert fresh results.
   // Citations found by the AI summary (type 'ai_detected') are kept.
