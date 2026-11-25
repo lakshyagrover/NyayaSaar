@@ -9,12 +9,12 @@ import path from 'path'
 import { put, del } from '@vercel/blob'
 
 const LOCAL_DIR = path.join(process.cwd(), 'storage', 'uploads')
-const useBlob = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN)
+const isBlobEnabled = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN)
 
 // Save a PDF. Returns the "storagePath" we keep in the database
 // (a Blob URL online, or a file path on the laptop).
 export async function saveFile(fileName, buffer) {
-  if (useBlob()) {
+  if (isBlobEnabled()) {
     const blob = await put(`judgments/${fileName}`, buffer, {
       access: 'public',
       contentType: 'application/pdf',
