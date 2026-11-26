@@ -1,11 +1,5 @@
 import { PrismaClient } from '@prisma/client'
 
-/**
- * Global Prisma client singleton.
- * In development, Next.js hot-reloads create new module instances, which
- * would exhaust the connection pool. The global singleton pattern prevents that.
- */
-
 const globalForPrisma = globalThis
 
 export const prisma = globalForPrisma.prisma ?? new PrismaClient({

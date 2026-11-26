@@ -2,19 +2,17 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import api from '../services/api.js'
 
-// Badge style map for citation types
 export default function SimilarJudgments() {
   const { id } = useParams()
 
-  const [data, setData]       = useState(null)   // { similar[], targetCase, disclaimer }
+  const [data, setData]       = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState(null)
-  const [citations, setCitations] = useState(null)  // { citations[], count }
+  const [citations, setCitations] = useState(null)
   const [citLoading, setCitLoading] = useState(false)
   const [citError, setCitError]     = useState(null)
   const [extracting, setExtracting] = useState(false)
 
-  // ── Fetch similar judgments ───────────────────────────────────────────────
   const loadSimilar = useCallback(async () => {
     setLoading(true)
     setError(null)
@@ -32,7 +30,6 @@ export default function SimilarJudgments() {
     }
   }, [id])
 
-  // ── Fetch stored citations ────────────────────────────────────────────────
   const loadCitations = useCallback(async () => {
     setCitLoading(true)
     setCitError(null)
@@ -51,7 +48,6 @@ export default function SimilarJudgments() {
     loadCitations()
   }, [loadSimilar, loadCitations])
 
-  // ── Run citation extraction ───────────────────────────────────────────────
   const handleExtractCitations = async () => {
     setExtracting(true)
     setCitError(null)
@@ -65,7 +61,6 @@ export default function SimilarJudgments() {
     }
   }
 
-  // ── Similarity score colour ───────────────────────────────────────────────
   const scoreColour = (pct) => {
     if (pct >= 60) return 'text-green-700 bg-green-50 border-green-200'
     if (pct >= 30) return 'text-yellow-700 bg-yellow-50 border-yellow-200'
@@ -74,7 +69,6 @@ export default function SimilarJudgments() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-500">
         <Link to="/cases" className="hover:text-primary-700 hover:underline">All Cases</Link>
         <span>/</span>
@@ -85,7 +79,6 @@ export default function SimilarJudgments() {
         <span className="text-gray-800 font-medium">Similar Judgments & Citations</span>
       </div>
 
-      {/* Page header */}
       <div className="card">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
@@ -112,11 +105,10 @@ export default function SimilarJudgments() {
         </div>
       </div>
 
-      {/* ── Similar Judgments Section ─────────────────────────────────────── */}
       {loading ? (
         <div className="card text-center py-16">
           <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-sm text-gray-500">Calculating textual similarity…</p>
+          <p className="text-sm text-gray-500">Calculating textual similarity...</p>
         </div>
       ) : error ? (
         <div className="card border-red-200 bg-red-50/40 text-center py-10">
@@ -127,7 +119,6 @@ export default function SimilarJudgments() {
         </div>
       ) : (
         <>
-          {/* Disclaimer */}
           {data?.disclaimer && (
             <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-xs text-amber-800">
               <strong>Note:</strong> {data.disclaimer}
@@ -208,7 +199,6 @@ export default function SimilarJudgments() {
         </>
       )}
 
-      {/* ── Citations Section ─────────────────────────────────────────────── */}
       <div className="card">
         <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
           <h2 className="font-semibold text-gray-900 text-base flex items-center gap-2">
@@ -225,7 +215,7 @@ export default function SimilarJudgments() {
             {extracting ? (
               <>
                 <span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                Extracting…
+                Extracting...
               </>
             ) : '🔄 Extract / Re-extract Citations'}
           </button>
@@ -234,7 +224,7 @@ export default function SimilarJudgments() {
         {citLoading ? (
           <div className="text-center py-8">
             <div className="w-6 h-6 border-2 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-            <p className="text-xs text-gray-500">Loading citations…</p>
+            <p className="text-xs text-gray-500">Loading citations...</p>
           </div>
         ) : citError ? (
           <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-700">

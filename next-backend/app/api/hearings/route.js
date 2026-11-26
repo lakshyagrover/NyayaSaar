@@ -2,13 +2,6 @@ import { NextResponse } from 'next/server'
 import { verifyToken } from '../../../lib/auth.js'
 import { prisma } from '../../../lib/prisma.js'
 
-/**
- * GET  /api/hearings            — List hearings of the logged-in user
- *      ?upcoming=true           — only hearings from today onwards
- *      ?caseId=...              — only hearings of one case
- * POST /api/hearings            — Schedule a new hearing
- */
-
 export async function GET(request) {
   try {
     const user = await verifyToken(request)
@@ -50,19 +43,16 @@ export async function POST(request) {
       return NextResponse.json({ message: 'caseId and date are required.' }, { status: 400 })
     }
 
-    // Save at 12:00 noon so the day never shifts because of time zones
     const hearingDate = new Date(/^\d{4}-\d{2}-\d{2}$/.test(date) ? `${date}T12:00:00` : date)
     if (isNaN(hearingDate.getTime())) {
       return NextResponse.json({ message: 'Invalid hearing date.' }, { status: 400 })
     }
 
-    // Stop typing mistakes like year 20225
     const year = hearingDate.getFullYear()
     if (year < 1950 || year > 2100) {
       return NextResponse.json({ message: 'Please enter a valid year (between 1950 and 2100).' }, { status: 400 })
     }
 
-    // The case must belong to the logged-in user
     const caseRecord = await prisma.case.findFirst({ where: { id: caseId, userId: user.id } })
     if (!caseRecord) {
       return NextResponse.json({ message: 'Case not found or you do not have permission.' }, { status: 404 })

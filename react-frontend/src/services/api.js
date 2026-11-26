@@ -4,7 +4,7 @@ import axios from 'axios'
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
   withCredentials: true,
-  timeout: 1800000, // 30 minutes: long judgments take time to summarize
+  timeout: 1800000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -26,7 +26,6 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       const url = error.config?.url || ''
 
-      // Do not redirect on login/register - the page must show the error message
       if (
         !url.includes('/summarize') &&
         !url.includes('/similar') &&

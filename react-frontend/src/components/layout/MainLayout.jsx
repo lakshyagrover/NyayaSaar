@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext.jsx'
 
-// Simple line icons (plain SVG, no extra library needed)
 const ICONS = {
   dashboard: 'M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z',
   cases: 'M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z',
@@ -42,13 +41,11 @@ export default function MainLayout({ children }) {
 
   return (
     <div className="h-screen flex bg-court-cream overflow-hidden">
-      {/* Sidebar */}
       <aside
         className={`${
           sidebarOpen ? 'w-64' : 'w-20'
         } bg-court-navy text-white flex flex-col h-screen transition-all duration-300 ease-in-out shrink-0`}
       >
-        {/* Logo + collapse button (top, like before) */}
         <div className={`flex items-center h-20 px-4 ${sidebarOpen ? 'justify-between' : 'justify-center'}`}>
           {sidebarOpen && (
             <Link to="/dashboard" className="flex items-center gap-3 min-w-0">
@@ -72,7 +69,6 @@ export default function MainLayout({ children }) {
 
         <div className="mx-5 h-px bg-gradient-to-r from-court-gold/40 to-transparent" />
 
-        {/* Navigation */}
         <nav className="flex-1 py-5 px-3 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map(({ label, path, icon }) => {
             const active = location.pathname === path || location.pathname.startsWith(path + '/')
@@ -89,7 +85,6 @@ export default function MainLayout({ children }) {
                     : 'text-white/60 hover:bg-white/5 hover:text-white'
                 }`}
               >
-                {/* gold bar on the active item */}
                 {active && <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r bg-court-gold" />}
                 <Icon name={icon} className={`w-5 h-5 shrink-0 ${active ? 'text-court-gold' : ''}`} />
                 {sidebarOpen && <span>{label}</span>}
@@ -98,10 +93,8 @@ export default function MainLayout({ children }) {
           })}
         </nav>
 
-        {/* User card + logout */}
         <div className="p-3 border-t border-white/10">
           <div className={`flex items-center gap-2 p-2 rounded-xl ${sidebarOpen ? 'bg-white/5' : 'justify-center'}`}>
-            {/* Avatar + name: click to open Profile */}
             <Link
               to="/profile"
               title="Go to Profile"
@@ -141,7 +134,6 @@ export default function MainLayout({ children }) {
         </div>
       </aside>
 
-      {/* Main content */}
       <main className="flex-1 h-screen overflow-y-auto">
         <div className="max-w-7xl mx-auto p-6">{children}</div>
       </main>

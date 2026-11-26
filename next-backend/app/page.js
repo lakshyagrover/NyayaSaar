@@ -1,8 +1,7 @@
-// Root page — only visible if someone visits the backend URL directly.
 export default function Home() {
   return (
     <main style={{ fontFamily: 'monospace', padding: '2rem', maxWidth: 600 }}>
-      <h1>🏛️ AI Court Summarizer — Backend API</h1>
+      <h1>NyayaSaar API</h1>
       <p>This is the Next.js REST API backend.</p>
       <p>All client traffic should come from the React frontend at <code>http://localhost:5173</code>.</p>
       <hr />

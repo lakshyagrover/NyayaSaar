@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../services/api.js'
 
-// Colour of the status dropdown
 const STATUS_STYLE = {
   SCHEDULED: 'bg-primary-50 text-primary-800 border-primary-200',
   COMPLETED: 'bg-green-50 text-green-800 border-green-200',
@@ -20,14 +19,13 @@ export default function HearingCalendar() {
   const [form, setForm] = useState(emptyForm)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
-  const [editingId, setEditingId] = useState(null) // id of the hearing being edited
+  const [editingId, setEditingId] = useState(null)
 
-  // Calendar: which month is shown, and which day is clicked
   const [month, setMonth] = useState(() => {
     const d = new Date()
     return new Date(d.getFullYear(), d.getMonth(), 1)
   })
-  const [selectedDay, setSelectedDay] = useState(null) // 'YYYY-MM-DD'
+  const [selectedDay, setSelectedDay] = useState(null)
 
   const loadData = async () => {
     setLoading(true)
@@ -100,14 +98,11 @@ export default function HearingCalendar() {
   const upcoming = hearings.filter((h) => new Date(h.date) >= today)
   const past = hearings.filter((h) => new Date(h.date) < today)
 
-  // ── Calendar helpers ──────────────────────────────────────────────
-  // Turn a date into 'YYYY-MM-DD' (local time) so we can compare days
   const dayKey = (d) => {
     const x = new Date(d)
     return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`
   }
 
-  // Group hearings by day: { '2026-12-10': [h1, h2] }
   const hearingsByDay = {}
   hearings.forEach((h) => {
     const k = dayKey(h.date)
@@ -115,8 +110,7 @@ export default function HearingCalendar() {
     hearingsByDay[k].push(h)
   })
 
-  // Build the grid: blank cells before the 1st, then 1..last day
-  const firstWeekday = month.getDay() // 0 = Sunday
+  const firstWeekday = month.getDay()
   const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate()
   const cells = []
   for (let i = 0; i < firstWeekday; i++) cells.push(null)
@@ -129,7 +123,6 @@ export default function HearingCalendar() {
     setSelectedDay(null)
   }
 
-  // Click a day: show its hearings; click an empty day: open the form with that date
   const clickDay = (date) => {
     const k = dayKey(date)
     setSelectedDay(k)
@@ -145,7 +138,6 @@ export default function HearingCalendar() {
     return d.getMonth() === month.getMonth() && d.getFullYear() === month.getFullYear()
   })
 
-  // Fill the form with this hearing and open it
   const startEdit = (h) => {
     setForm({
       caseId: h.case?.id || h.caseId,
@@ -173,7 +165,6 @@ export default function HearingCalendar() {
         {h.notes && <p className="text-xs text-gray-500">📝 {h.notes}</p>}
       </div>
 
-      {/* All controls are the same height so they line up */}
       <div className="flex items-center gap-2 shrink-0">
         <select
           value={h.status}
@@ -220,7 +211,6 @@ export default function HearingCalendar() {
         <div className="p-3 rounded-lg bg-red-50 text-red-800 text-sm border border-red-200">{error}</div>
       )}
 
-      {/* New hearing form */}
       {showForm && (
         <form id="hearing-form" onSubmit={handleSubmit} className="card grid grid-cols-1 sm:grid-cols-2 gap-4">
           <h2 className="sm:col-span-2 text-lg font-semibold text-court-navy">
@@ -253,15 +243,13 @@ export default function HearingCalendar() {
           </div>
           <div className="sm:col-span-2">
             <button type="submit" disabled={saving} className="btn-primary">
-              {saving ? 'Saving…' : editingId ? 'Update Hearing' : 'Save Hearing'}
+              {saving ? 'Saving...' : editingId ? 'Update Hearing' : 'Save Hearing'}
             </button>
           </div>
         </form>
       )}
 
-      {/* ── Monthly calendar ───────────────────────────────────────── */}
       <div className="card p-0 overflow-hidden">
-        {/* Month header */}
         <div className="flex items-center justify-between px-5 py-4 bg-court-navy text-white">
           <button onClick={() => changeMonth(-1)} className="px-3 py-1 rounded-lg hover:bg-white/10" aria-label="Previous month">
             ‹
@@ -285,14 +273,12 @@ export default function HearingCalendar() {
           </div>
         </div>
 
-        {/* Weekday names */}
         <div className="grid grid-cols-7 bg-primary-50 text-center text-xs font-semibold text-primary-800">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
             <div key={d} className="py-2">{d}</div>
           ))}
         </div>
 
-        {/* Days */}
         <div className="grid grid-cols-7">
           {cells.map((date, i) => {
             if (!date) return <div key={i} className="min-h-[90px] border-t border-r border-gray-100 bg-gray-50/50" />
@@ -341,7 +327,6 @@ export default function HearingCalendar() {
           })}
         </div>
 
-        {/* Legend */}
         <div className="flex flex-wrap gap-4 px-5 py-3 border-t border-gray-100 text-[11px] text-gray-600">
           <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-primary-100" /> Scheduled</span>
           <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-amber-100" /> Adjourned</span>
@@ -351,7 +336,6 @@ export default function HearingCalendar() {
         </div>
       </div>
 
-      {/* Hearings on the clicked day */}
       {selectedDay && hearingsByDay[selectedDay] && (
         <div className="card">
           <div className="flex items-center justify-between mb-2">
@@ -366,11 +350,10 @@ export default function HearingCalendar() {
         </div>
       )}
 
-      {/* Upcoming hearings */}
       <div className="card">
         <h2 className="text-lg font-semibold text-court-navy mb-2">Upcoming Hearings ({upcoming.length})</h2>
         {loading ? (
-          <p className="text-sm text-gray-500">Loading…</p>
+          <p className="text-sm text-gray-500">Loading...</p>
         ) : upcoming.length === 0 ? (
           <div className="flex items-center justify-between gap-4 py-3">
             <div>
@@ -388,7 +371,6 @@ export default function HearingCalendar() {
         )}
       </div>
 
-      {/* Past hearings */}
       {past.length > 0 && (
         <div className="card">
           <h2 className="text-lg font-semibold text-court-navy mb-2">Past Hearings ({past.length})</h2>

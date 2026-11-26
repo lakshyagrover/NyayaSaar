@@ -15,9 +15,8 @@ export default function AllCases() {
   const [error, setError]           = useState(null)
   const [search, setSearch]         = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')
-  const [feedback, setFeedback]     = useState(null) // { type: 'success' | 'error', text: string }
+  const [feedback, setFeedback]     = useState(null)
 
-  // Modal state for manual case creation
   const [showModal, setShowModal]   = useState(false)
   const [creating, setCreating]     = useState(false)
   const [form, setForm]             = useState({
@@ -29,7 +28,6 @@ export default function AllCases() {
     status: 'PENDING',
   })
 
-  // Fetch cases from API
   const fetchCases = useCallback(async () => {
     setLoading(true)
     setError(null)
@@ -48,7 +46,6 @@ export default function AllCases() {
     fetchCases()
   }, [fetchCases])
 
-  // Delete case
   const handleDelete = async (id, caseNumber) => {
     if (!window.confirm(`Are you sure you want to delete case "${caseNumber}"? This cannot be undone.`)) {
       return
@@ -67,7 +64,6 @@ export default function AllCases() {
     }
   }
 
-  // Create case
   const handleCreateSubmit = async (e) => {
     e.preventDefault()
     setCreating(true)
@@ -85,7 +81,6 @@ export default function AllCases() {
         status: 'PENDING',
       })
       setFeedback({ type: 'success', text: 'Case created successfully.' })
-      // Add the new case to list or refresh
       setCases((prev) => [res.data.case, ...prev])
     } catch (err) {
       console.error('Failed to create case:', err)
@@ -98,7 +93,6 @@ export default function AllCases() {
     }
   }
 
-  // Client-side filtering
   const [typeFilter, setTypeFilter] = useState('ALL')
   const types = ['ALL', ...new Set(cases.map((c) => c.caseType || 'Other'))]
 
@@ -109,7 +103,6 @@ export default function AllCases() {
       c.caseNumber?.toLowerCase().includes(q) ||
       c.court?.toLowerCase().includes(q)
 
-    // statusFilter: ALL | SUMMARIZED | PENDING
     const matchesStatus =
       statusFilter === 'ALL' ||
       (statusFilter === 'SUMMARIZED' && c.summary) ||
@@ -124,7 +117,6 @@ export default function AllCases() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-court-navy">All Cases</h1>
@@ -148,7 +140,6 @@ export default function AllCases() {
         </div>
       </div>
 
-      {/* User Feedback Alert */}
       {feedback && (
         <div
           className={`p-4 rounded-xl text-sm flex items-center justify-between ${
@@ -162,7 +153,6 @@ export default function AllCases() {
         </div>
       )}
 
-      {/* Search and Filters */}
       <div className="card p-4 flex flex-col lg:flex-row gap-3 lg:items-center">
         <div className="relative flex-1">
           <input
@@ -170,11 +160,10 @@ export default function AllCases() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="form-input"
-            placeholder="Search by title, case number or court…"
+            placeholder="Search by title, case number or court..."
           />
         </div>
 
-        {/* Summary status tabs */}
         <div className="flex items-center gap-1 bg-primary-50 p-1 rounded-lg text-xs font-medium">
           {[
             ['ALL', 'All'],
@@ -195,7 +184,6 @@ export default function AllCases() {
           ))}
         </div>
 
-        {/* Category filter */}
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
@@ -207,15 +195,13 @@ export default function AllCases() {
         </select>
       </div>
 
-      {/* Loading */}
       {loading && (
         <div className="card text-center py-16">
           <div className="w-10 h-10 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-sm text-gray-500">Loading cases…</p>
+          <p className="text-sm text-gray-500">Loading cases...</p>
         </div>
       )}
 
-      {/* Error */}
       {!loading && error && (
         <div className="card text-center py-12 border-red-200 bg-red-50/50">
           <h2 className="text-base font-semibold text-red-800">Unable to load cases</h2>
@@ -224,7 +210,6 @@ export default function AllCases() {
         </div>
       )}
 
-      {/* Empty */}
       {!loading && !error && cases.length === 0 && (
         <div className="card flex items-center justify-between gap-4">
           <div>
@@ -235,7 +220,6 @@ export default function AllCases() {
         </div>
       )}
 
-      {/* Filtered empty */}
       {!loading && !error && cases.length > 0 && filteredCases.length === 0 && (
         <div className="card flex items-center justify-between gap-4">
           <p className="font-medium text-gray-700">No cases match your search</p>
@@ -252,7 +236,6 @@ export default function AllCases() {
         </div>
       )}
 
-      {/* Case cards */}
       {!loading && !error && filteredCases.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filteredCases.map((c) => {
@@ -265,7 +248,6 @@ export default function AllCases() {
                 key={c.id}
                 className="card p-5 flex flex-col hover:border-primary-300 hover:-translate-y-0.5 transition-all"
               >
-                {/* Top: icon + badges */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="w-11 h-11 rounded-xl bg-primary-100 text-primary-800 flex items-center justify-center font-bold font-serif text-lg shrink-0">
                     {c.title?.[0]?.toUpperCase() || '?'}
@@ -278,7 +260,6 @@ export default function AllCases() {
                   </div>
                 </div>
 
-                {/* Title + details */}
                 <Link to={`/cases/${c.id}`} className="mt-4 block">
                   <h3 className="text-base font-semibold text-gray-900 leading-snug line-clamp-2 hover:text-primary-700">
                     {c.title}
@@ -291,13 +272,11 @@ export default function AllCases() {
                   <p>{date}</p>
                 </div>
 
-                {/* Counts */}
                 <div className="mt-4 flex gap-4 text-xs text-gray-500">
                   <span>{c._count?.citations || 0} citations</span>
                   <span>{c._count?.hearings || 0} hearings</span>
                 </div>
 
-                {/* Actions */}
                 <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2">
                   <Link to={`/cases/${c.id}`} className="btn-secondary text-xs py-1.5 px-3 flex-1">
                     View
@@ -325,7 +304,6 @@ export default function AllCases() {
         </p>
       )}
 
-      {/* Create Case Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 relative">
@@ -425,7 +403,7 @@ export default function AllCases() {
                   Cancel
                 </button>
                 <button type="submit" disabled={creating} className="btn-primary">
-                  {creating ? 'Creating…' : 'Save Case'}
+                  {creating ? 'Creating...' : 'Save Case'}
                 </button>
               </div>
             </form>

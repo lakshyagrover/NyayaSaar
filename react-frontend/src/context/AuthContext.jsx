@@ -8,7 +8,6 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const [token, setToken]     = useState(() => localStorage.getItem('token'))
 
-  // Validate stored token on mount
   useEffect(() => {
     if (!token) {
       setLoading(false)
@@ -56,7 +55,6 @@ export function AuthProvider({ children }) {
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const ctx = useContext(AuthContext)
   if (!ctx) throw new Error('useAuth must be used within AuthProvider')

@@ -3,11 +3,6 @@ import { verifyToken } from '../../../../lib/auth.js'
 import { prisma } from '../../../../lib/prisma.js'
 import { readFile } from '../../../../lib/storage.js'
 
-/**
- * GET /api/documents/[id]
- * Securely streams the stored PDF document for authorized users only.
- * Enforces ownership: only the user who owns the linked case can download/view the document.
- */
 export async function GET(request, { params }) {
   try {
     const user = await verifyToken(request)
@@ -20,7 +15,6 @@ export async function GET(request, { params }) {
       return NextResponse.json({ message: 'Document ID is required.' }, { status: 400 })
     }
 
-    // Find document with linked case to check ownership
     const doc = await prisma.document.findUnique({
       where: { id },
       include: {

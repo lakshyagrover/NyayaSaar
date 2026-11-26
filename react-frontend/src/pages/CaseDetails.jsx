@@ -18,7 +18,6 @@ export default function CaseDetails() {
   const [error, setError]             = useState(null)
   const [feedback, setFeedback]       = useState(null)
 
-  // Edit modal state
   const [showEdit, setShowEdit]       = useState(false)
   const [saving, setSaving]           = useState(false)
   const [reExtracting, setReExtracting]   = useState(false)
@@ -35,7 +34,6 @@ export default function CaseDetails() {
     extractedText: '',
   })
 
-  // Fetch case details
   const fetchCase = useCallback(async () => {
     setLoading(true)
     setError(null)
@@ -68,14 +66,12 @@ export default function CaseDetails() {
     fetchCase()
   }, [fetchCase])
 
-  // Load stored citations whenever case loads
   const fetchCitations = useCallback(async () => {
     setCitLoading(true)
     try {
       const res = await api.get(`/citations/${id}`)
       setCitations(res.data)
     } catch {
-      // non-critical — silently ignore
     } finally {
       setCitLoading(false)
     }
@@ -85,7 +81,6 @@ export default function CaseDetails() {
     fetchCitations()
   }, [fetchCitations])
 
-  // Handle Edit Submit
   const handleEditSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
@@ -107,7 +102,6 @@ export default function CaseDetails() {
     }
   }
 
-  // Handle Delete
   const handleDelete = async () => {
     if (
       !window.confirm(
@@ -129,7 +123,6 @@ export default function CaseDetails() {
     }
   }
 
-  // Handle safe re-extraction
   const handleReExtract = async () => {
     setReExtracting(true)
     setFeedback(null)
@@ -153,7 +146,6 @@ export default function CaseDetails() {
     }
   }
 
-  // Handle citation extraction
   const handleExtractCitations = async () => {
     setExtractingCit(true)
     setFeedback(null)
@@ -185,7 +177,7 @@ export default function CaseDetails() {
     return (
       <div className="card text-center py-20">
         <div className="w-10 h-10 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-        <p className="text-sm text-gray-500 font-medium">Loading case details…</p>
+        <p className="text-sm text-gray-500 font-medium">Loading case details...</p>
       </div>
     )
   }
@@ -229,7 +221,6 @@ export default function CaseDetails() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb & Navigation */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <Link to="/cases" className="hover:text-primary-700 hover:underline">
@@ -250,7 +241,6 @@ export default function CaseDetails() {
         </div>
       </div>
 
-      {/* User Feedback */}
       {feedback && (
         <div
           className={`p-4 rounded-lg text-sm flex items-center justify-between ${
@@ -269,7 +259,6 @@ export default function CaseDetails() {
         </div>
       )}
 
-      {/* Header Overview Card */}
       <div className="card">
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-6 border-b border-gray-100">
           <div>
@@ -312,7 +301,6 @@ export default function CaseDetails() {
           </div>
         </div>
 
-        {/* Metadata Grid */}
         <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           <div className="bg-gray-50 rounded-lg p-3.5">
             <p className="text-xs text-gray-500">
@@ -349,7 +337,6 @@ export default function CaseDetails() {
         </div>
       </div>
 
-      {/* Linked Assets Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="card flex items-center gap-3">
           <span className="text-3xl">📄</span>
@@ -380,7 +367,6 @@ export default function CaseDetails() {
         </div>
       </div>
 
-      {/* Attached PDF Document Card */}
       {primaryDocument && (
         <div className="card flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-primary-50/30 border-primary-200">
           <div className="flex items-center gap-3">
@@ -399,7 +385,7 @@ export default function CaseDetails() {
               disabled={reExtracting}
               className="btn-secondary text-xs flex items-center gap-1"
             >
-              {reExtracting ? 'Extracting…' : '🔄 Re-extract Digital Text'}
+              {reExtracting ? 'Extracting...' : '🔄 Re-extract Digital Text'}
             </button>
             <a
               href={`http://localhost:3000/api/documents/${primaryDocument.id}`}
@@ -413,7 +399,6 @@ export default function CaseDetails() {
         </div>
       )}
 
-      {/* When no document is attached */}
       {!primaryDocument && (
         <div className="card flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-amber-50/40 border-amber-200">
           <div className="flex items-center gap-3">
@@ -430,7 +415,6 @@ export default function CaseDetails() {
         </div>
       )}
 
-      {/* Extracted Text Preview Section */}
       <div className="card">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold text-gray-900 text-base flex items-center gap-2">
@@ -443,7 +427,7 @@ export default function CaseDetails() {
                 disabled={reExtracting}
                 className="text-xs text-primary-700 hover:underline flex items-center gap-1"
               >
-                {reExtracting ? 'Extracting…' : '🔄 Re-extract'}
+                {reExtracting ? 'Extracting...' : '🔄 Re-extract'}
               </button>
             )}
             {caseData.extractedText && (
@@ -471,7 +455,7 @@ export default function CaseDetails() {
                   disabled={reExtracting}
                   className="btn-secondary text-xs"
                 >
-                  {reExtracting ? 'Extracting…' : '🔄 Try Re-extracting Digital Text'}
+                  {reExtracting ? 'Extracting...' : '🔄 Try Re-extracting Digital Text'}
                 </button>
               </div>
             )}
@@ -479,7 +463,6 @@ export default function CaseDetails() {
         )}
       </div>
 
-      {/* Citations Card */}
       <div className="card">
         <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
           <h2 className="font-semibold text-gray-900 text-base flex items-center gap-2">
@@ -498,7 +481,7 @@ export default function CaseDetails() {
               {extractingCit ? (
                 <>
                   <span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                  Extracting…
+                  Extracting...
                 </>
               ) : '🔄 Extract Citations'}
             </button>
@@ -508,7 +491,7 @@ export default function CaseDetails() {
         {citLoading ? (
           <div className="text-center py-6">
             <div className="w-5 h-5 border-2 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-            <p className="text-xs text-gray-500">Loading citations…</p>
+            <p className="text-xs text-gray-500">Loading citations...</p>
           </div>
         ) : citations?.citations?.length > 0 ? (
           <div className="space-y-4">
@@ -555,7 +538,7 @@ export default function CaseDetails() {
         )}
       </div>
 
-      {/* Edit Modal */}      {showEdit && (
+      {showEdit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-xl w-full p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-gray-200">
@@ -643,7 +626,7 @@ export default function CaseDetails() {
                   rows={6}
                   value={editForm.extractedText}
                   onChange={(e) => setEditForm({ ...editForm, extractedText: e.target.value })}
-                  placeholder="Paste legal judgment or order text here…"
+                  placeholder="Paste legal judgment or order text here..."
                   className="form-input font-mono text-xs"
                 />
               </div>
@@ -658,7 +641,7 @@ export default function CaseDetails() {
                   Cancel
                 </button>
                 <button type="submit" disabled={saving} className="btn-primary">
-                  {saving ? 'Saving Changes…' : 'Save Changes'}
+                  {saving ? 'Saving Changes...' : 'Save Changes'}
                 </button>
               </div>
             </form>

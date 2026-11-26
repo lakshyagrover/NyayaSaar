@@ -2,11 +2,6 @@ import { NextResponse } from 'next/server'
 import { verifyToken } from '../../../../lib/auth.js'
 import { prisma } from '../../../../lib/prisma.js'
 
-/**
- * GET /api/cases/[id]
- * Fetches the requested case and verifies ownership.
- * Returns 404 if it does not exist or does not belong to the user.
- */
 export async function GET(request, { params }) {
   try {
     const user = await verifyToken(request)
@@ -19,7 +14,6 @@ export async function GET(request, { params }) {
       return NextResponse.json({ message: 'Case ID is required.' }, { status: 400 })
     }
 
-    // Verify ownership: case must match both ID and authenticated userId
     const caseRecord = await prisma.case.findFirst({
       where: {
         id,
@@ -57,10 +51,6 @@ export async function GET(request, { params }) {
   }
 }
 
-/**
- * PUT /api/cases/[id]
- * Updates allowed fields for a case owned by the authenticated user.
- */
 export async function PUT(request, { params }) {
   try {
     const user = await verifyToken(request)
@@ -73,7 +63,6 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ message: 'Case ID is required.' }, { status: 400 })
     }
 
-    // Check ownership first
     const existing = await prisma.case.findFirst({
       where: {
         id,
@@ -176,10 +165,6 @@ export async function PUT(request, { params }) {
   }
 }
 
-/**
- * DELETE /api/cases/[id]
- * Deletes a case owned by the authenticated user.
- */
 export async function DELETE(request, { params }) {
   try {
     const user = await verifyToken(request)
@@ -192,7 +177,6 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ message: 'Case ID is required.' }, { status: 400 })
     }
 
-    // Verify ownership
     const existing = await prisma.case.findFirst({
       where: {
         id,

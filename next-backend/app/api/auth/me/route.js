@@ -2,25 +2,13 @@ import { NextResponse } from 'next/server'
 import { verifyToken } from '../../../../lib/auth.js'
 import { prisma } from '../../../../lib/prisma.js'
 
-/**
- * GET /api/auth/me
- * Returns the full authenticated user profile from the database.
- *
- * Token is read from either:
- *   - HTTP-only cookie  (court_token)
- *   - Authorization: Bearer <token>  header
- *
- * Never returns the hashed password.
- */
 export async function GET(request) {
   try {
-    // ── Verify JWT (cookie or Bearer) ─────────────────────────────────────
     const tokenPayload = await verifyToken(request)
     if (!tokenPayload) {
       return NextResponse.json({ message: 'Unauthorized.' }, { status: 401 })
     }
 
-    // ── Fetch fresh record from DB ────────────────────────────────────────
     const user = await prisma.user.findUnique({
       where: { id: tokenPayload.id },
       select: {
@@ -30,7 +18,6 @@ export async function GET(request) {
         role:      true,
         createdAt: true,
         updatedAt: true,
-        // Aggregate counts for the dashboard
         _count: {
           select: {
             cases:    true,
@@ -41,7 +28,6 @@ export async function GET(request) {
     })
 
     if (!user) {
-      // Token was valid but the user was deleted
       return NextResponse.json({ message: 'User not found.' }, { status: 404 })
     }
 

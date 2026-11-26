@@ -14,19 +14,15 @@ export default function AISummary() {
   const [errorCode, setErrorCode] = useState(null)
   const [successMsg, setSuccessMsg] = useState(null)
 
-  // Fetch initial case and existing summary
   const loadCaseAndSummary = useCallback(async () => {
     setLoading(true)
     setError(null)
     setErrorCode(null)
     try {
-      // 1. Fetch case record — this is the critical step; if it fails, show error
       const caseRes = await api.get(`/cases/${id}`)
       const c = caseRes.data.case
       setCaseData(c)
 
-      // 2. Fetch existing summary — handled separately so a missing summary
-      //    doesn't trigger the page-level error state
       try {
         const sumRes = await api.get(`/summarize?caseId=${id}`)
         if (sumRes.data?.summary) {
@@ -37,8 +33,6 @@ export default function AISummary() {
           setCitations(c.citations || [])
         }
       } catch (sumErr) {
-        // A missing summary (200 with null) or any summary fetch error
-        // should NOT crash the page — just show empty state
         console.warn('Could not load existing summary:', sumErr?.response?.data?.message || sumErr.message)
         setSummary(null)
         setCitations(c.citations || [])
@@ -60,7 +54,6 @@ export default function AISummary() {
     loadCaseAndSummary()
   }, [loadCaseAndSummary])
 
-  // Generate or Regenerate Summary
   const handleGenerate = async (force = false) => {
     setGenerating(true)
     setError(null)
@@ -98,7 +91,7 @@ export default function AISummary() {
     return (
       <div className="card text-center py-20">
         <div className="w-10 h-10 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-        <p className="text-sm text-gray-500 font-medium">Loading judgment details…</p>
+        <p className="text-sm text-gray-500 font-medium">Loading judgment details...</p>
       </div>
     )
   }
@@ -109,7 +102,6 @@ export default function AISummary() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb Navigation */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <Link to="/cases" className="hover:text-primary-700 hover:underline">
@@ -127,7 +119,6 @@ export default function AISummary() {
         </Link>
       </div>
 
-      {/* Header Overview Card */}
       <div className="card">
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div>
@@ -166,7 +157,7 @@ export default function AISummary() {
                 className="btn-secondary text-xs flex items-center gap-1.5"
                 title="Regenerate this summary"
               >
-                {generating ? 'Regenerating…' : '🔄 Regenerate Summary'}
+                {generating ? 'Regenerating...' : '🔄 Regenerate Summary'}
               </button>
             ) : (
               <button
@@ -174,14 +165,13 @@ export default function AISummary() {
                 disabled={generating || !hasExtractedText}
                 className="btn-primary text-xs flex items-center gap-1.5"
               >
-                {generating ? 'Analyzing Judgment…' : '⚡ Generate AI Summary'}
+                {generating ? 'Analyzing Judgment...' : '⚡ Generate AI Summary'}
               </button>
             )}
           </div>
         </div>
       </div>
 
-      {/* Success Notification */}
       {successMsg && (
         <div className="p-4 rounded-xl text-sm bg-green-50 text-green-800 border border-green-200 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -194,7 +184,6 @@ export default function AISummary() {
         </div>
       )}
 
-      {/* Error Alert */}
       {error && (
         <div
           className={`p-5 rounded-xl text-sm border ${
@@ -246,21 +235,18 @@ export default function AISummary() {
         </div>
       )}
 
-      {/* Generating State Banner */}
       {generating && (
         <div className="card text-center py-12 border-primary-200 bg-primary-50/20">
           <div className="w-10 h-10 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <h2 className="text-lg font-bold text-gray-900">Analyzing Judgment with AI</h2>
           <p className="text-xs text-gray-600 mt-1 max-w-md mx-auto">
-            Extracting facts, legal issues, arguments, ratio decidendi, and operative orders… Long judgments can take a few minutes. Please keep this page open.
+            Extracting facts, legal issues, arguments, ratio decidendi, and operative orders... Long judgments can take a few minutes. Please keep this page open.
           </p>
         </div>
       )}
 
-      {/* Summary Content */}
       {summary ? (
         <div className="space-y-6">
-          {/* Legal AI Disclaimer Banner */}
           <div className="bg-primary-50 border border-primary-100 rounded-xl p-4 text-xs text-primary-900 flex items-start gap-3">
             <div>
               <p className="font-semibold">Legal Study Aid & Research Disclaimer</p>
@@ -275,9 +261,7 @@ export default function AISummary() {
             </div>
           </div>
 
-          {/* 8 Structured Legal Summary Sections */}
           <div className="grid grid-cols-1 gap-5">
-            {/* 1. Case Overview */}
             <div className="card border-l-4 border-l-primary-700">
               <h2 className="font-semibold text-court-navy mb-2 flex items-center gap-2 text-base">
                 1. Case Overview
@@ -287,7 +271,6 @@ export default function AISummary() {
               </div>
             </div>
 
-            {/* 2. Important Facts */}
             <div className="card border-l-4 border-l-primary-700">
               <h2 className="font-semibold text-court-navy mb-2 flex items-center gap-2 text-base">
                 2. Important Material Facts
@@ -297,7 +280,6 @@ export default function AISummary() {
               </div>
             </div>
 
-            {/* 3. Legal Issues */}
             <div className="card border-l-4 border-l-primary-700">
               <h2 className="font-semibold text-court-navy mb-2 flex items-center gap-2 text-base">
                 3. Legal Issues & Questions of Law Framed
@@ -307,7 +289,6 @@ export default function AISummary() {
               </div>
             </div>
 
-            {/* 4. Arguments of Petitioner / Appellant */}
             <div className="card border-l-4 border-l-primary-700">
               <h2 className="font-semibold text-court-navy mb-2 flex items-center gap-2 text-base">
                 4. Arguments of the Petitioner / Appellant
@@ -317,7 +298,6 @@ export default function AISummary() {
               </div>
             </div>
 
-            {/* 5. Arguments of Respondent */}
             <div className="card border-l-4 border-l-primary-700">
               <h2 className="font-semibold text-court-navy mb-2 flex items-center gap-2 text-base">
                 5. Arguments of the Respondent / Defendant
@@ -327,7 +307,6 @@ export default function AISummary() {
               </div>
             </div>
 
-            {/* 6. Court's Reasoning */}
             <div className="card border-l-4 border-l-primary-700">
               <h2 className="font-semibold text-court-navy mb-2 flex items-center gap-2 text-base">
                 6. Court’s Findings & Legal Reasoning
@@ -337,7 +316,6 @@ export default function AISummary() {
               </div>
             </div>
 
-            {/* 7. Final Judgment / Decision */}
             <div className="card border-l-4 border-l-primary-700">
               <h2 className="font-semibold text-court-navy mb-2 flex items-center gap-2 text-base">
                 7. Final Judgment & Operative Order
@@ -347,7 +325,6 @@ export default function AISummary() {
               </div>
             </div>
 
-            {/* 8. Important Legal Principles */}
             <div className="card border-l-4 border-l-primary-700">
               <h2 className="font-semibold text-court-navy mb-2 flex items-center gap-2 text-base">
                 8. Important Legal Principles & Ratio Decidendi
@@ -358,7 +335,6 @@ export default function AISummary() {
             </div>
           </div>
 
-          {/* Citations List */}
           <div className="card">
             <h2 className="font-semibold text-gray-900 mb-3 flex items-center gap-2 text-base">
               Legal Citations & Precedents Identified ({citations.length})
@@ -389,7 +365,6 @@ export default function AISummary() {
           </div>
         </div>
       ) : !generating ? (
-        /* Empty State */
         <div className="card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
           <h2 className="text-base font-semibold text-court-navy">No Summary Generated Yet</h2>

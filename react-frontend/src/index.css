@@ -15,14 +15,12 @@
     @apply font-serif tracking-tight;
   }
 
-  /* numbers line up neatly in tables and stats */
   body {
     font-variant-numeric: tabular-nums;
   }
 }
 
 @layer components {
-  /* Reusable button variants */
   .btn-primary {
     @apply inline-flex items-center justify-center px-4 py-2 rounded-lg
            bg-primary-700 text-white font-medium text-sm
@@ -47,12 +45,10 @@
            disabled:opacity-50 disabled:cursor-not-allowed transition-colors;
   }
 
-  /* Card */
   .card {
     @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
   }
 
-  /* Form controls */
   .form-label {
     @apply block text-sm font-medium text-gray-700 mb-1;
   }
@@ -68,7 +64,6 @@
     @apply mt-1 text-xs text-red-600;
   }
 
-  /* Badge */
   .badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
   }
@@ -79,12 +74,10 @@
   .badge-red    { @apply badge bg-red-100 text-red-800; }
   .badge-gray   { @apply badge bg-gray-100 text-gray-800; }
 
-  /* Citation type boxes: rose for cases, sand-gold for Acts, sage for sections */
   .badge-case    { @apply badge border bg-primary-50 text-primary-800 border-primary-200; }
   .badge-act     { @apply badge border bg-[#f6ecda] text-[#7a5418] border-[#e8d3ab]; }
   .badge-section { @apply badge border bg-[#e4efeb] text-[#2d5b53] border-[#c3dbd3]; }
 
-  /* Small coloured dot + text (the dot takes the text colour) */
   .status {
     @apply inline-flex items-center gap-1.5 text-xs font-medium;
   }

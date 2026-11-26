@@ -2,12 +2,6 @@ import { NextResponse } from 'next/server'
 import { verifyToken } from '../../../../lib/auth.js'
 import { prisma } from '../../../../lib/prisma.js'
 
-/**
- * PUT    /api/hearings/[id]  — Update a hearing (date, time, location, notes, status)
- * DELETE /api/hearings/[id]  — Delete a hearing
- * Only the user who created the hearing can change it.
- */
-
 const STATUSES = ['SCHEDULED', 'COMPLETED', 'ADJOURNED', 'CANCELLED']
 
 async function findOwnHearing(id, userId) {

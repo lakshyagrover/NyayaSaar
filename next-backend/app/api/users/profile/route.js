@@ -2,14 +2,6 @@ import { NextResponse } from 'next/server'
 import { verifyToken } from '../../../../lib/auth.js'
 import { prisma } from '../../../../lib/prisma.js'
 
-/**
- * GET /api/users/profile
- * Returns the full authenticated user profile.
- *
- * PUT /api/users/profile
- * Updates name, email, or role. Password changes require the current password.
- */
-
 export async function GET(request) {
   try {
     const tokenPayload = await verifyToken(request)
@@ -50,8 +42,6 @@ export async function PUT(request) {
     const body = await request.json()
     const { name, email } = body
 
-    // Build a safe update payload — only allow name and email for now
-    // Password changes belong in a dedicated /api/auth/change-password endpoint
     const data = {}
     if (name)  data.name  = name.trim()
     if (email) data.email = email.toLowerCase().trim()
@@ -63,7 +53,6 @@ export async function PUT(request) {
       )
     }
 
-    // Check new email is not already taken by another account
     if (data.email && data.email !== tokenPayload.email) {
       const conflict = await prisma.user.findUnique({ where: { email: data.email } })
       if (conflict) {

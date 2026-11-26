@@ -71,7 +71,7 @@ export default function Login() {
             </div>
 
             <button type="submit" disabled={loading} className="btn-primary w-full mt-2">
-              {loading ? 'Signing in…' : 'Sign in'}
+              {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
 

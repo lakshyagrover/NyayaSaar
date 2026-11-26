@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 
-// Allow any localhost/127.0.0.1 port (e.g. 5173, 5174, etc.) and configured FRONTEND_URL
 const LOCALHOST_ORIGIN_REGEX = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/
 
 function isOriginAllowed(origin) {
@@ -13,7 +12,6 @@ export function middleware(request) {
   const origin = request.headers.get('origin')
   const allowed = isOriginAllowed(origin)
 
-  // Handle preflight requests
   if (request.method === 'OPTIONS') {
     const headers = new Headers()
     if (allowed) {

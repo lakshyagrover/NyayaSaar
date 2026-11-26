@@ -2,16 +2,6 @@ import { NextResponse } from 'next/server'
 import { verifyToken } from '../../../lib/auth.js'
 import { prisma } from '../../../lib/prisma.js'
 
-/**
- * GET /api/cases
- * Query params:
- *   - page: number (default 1)
- *   - limit: number (default 20, max 100)
- *   - search: string (optional search in title or caseNumber)
- *   - status: string (optional filter)
- *
- * Returns only cases belonging to the authenticated user.
- */
 export async function GET(request) {
   try {
     const user = await verifyToken(request)
@@ -25,7 +15,6 @@ export async function GET(request) {
     const search = searchParams.get('search')?.trim()
     const status = searchParams.get('status')?.trim()
 
-    // Scoped strictly to the authenticated user
     const where = {
       userId: user.id,
     }
@@ -83,12 +72,6 @@ export async function GET(request) {
   }
 }
 
-/**
- * POST /api/cases
- * Body: { title, caseNumber, court?, judgmentDate?, caseType?, status?, extractedText? }
- *
- * Creates a new case belonging to the authenticated user.
- */
 export async function POST(request) {
   try {
     const user = await verifyToken(request)
@@ -99,7 +82,6 @@ export async function POST(request) {
     const body = await request.json()
     const { title, caseNumber, court, judgmentDate, caseType, status, extractedText } = body
 
-    // ── Validation ────────────────────────────────────────────────────────
     if (!title || typeof title !== 'string' || !title.trim()) {
       return NextResponse.json({ message: 'Case title is required.' }, { status: 400 })
     }
@@ -110,7 +92,6 @@ export async function POST(request) {
 
     const normalizedCaseNumber = caseNumber.trim()
 
-    // ── Check duplicate case number ───────────────────────────────────────
     const existing = await prisma.case.findUnique({
       where: { caseNumber: normalizedCaseNumber },
     })
@@ -121,7 +102,6 @@ export async function POST(request) {
       )
     }
 
-    // ── Parse optional date ───────────────────────────────────────────────
     let parsedDate = null
     if (judgmentDate) {
       const d = new Date(judgmentDate)
@@ -131,7 +111,6 @@ export async function POST(request) {
       parsedDate = d
     }
 
-    // ── Create case ───────────────────────────────────────────────────────
     const newCase = await prisma.case.create({
       data: {
         title: title.trim(),

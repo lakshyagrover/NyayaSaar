@@ -3,7 +3,6 @@ import { useAuth } from '../context/AuthContext.jsx'
 import { Link } from 'react-router-dom'
 import api from '../services/api.js'
 
-// "Good morning / afternoon / evening" based on the time
 function greeting() {
   const h = new Date().getHours()
   if (h < 12) return 'Good morning'
@@ -11,7 +10,6 @@ function greeting() {
   return 'Good evening'
 }
 
-// How many days from today until a date
 function daysUntil(date) {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -46,13 +44,11 @@ export default function Dashboard() {
     load()
   }, [])
 
-  // ── Numbers for the cards ─────────────────────────────────────────────
   const summaries = cases.filter((c) => c.summary).length
   const citations = cases.reduce((sum, c) => sum + (c._count?.citations || 0), 0)
   const summaryPercent = cases.length ? Math.round((summaries / cases.length) * 100) : 0
   const pendingSummaries = cases.filter((c) => !c.summary && c.extractedText !== null).slice(0, 3)
 
-  // Cases grouped by category (Criminal, Civil, ...)
   const byType = {}
   cases.forEach((c) => {
     const t = c.caseType || 'Other'
@@ -76,9 +72,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* ── Welcome banner ─────────────────────────────────────────── */}
       <div className="relative overflow-hidden rounded-2xl bg-court-navy text-white p-6 sm:p-8">
-        {/* soft decorative circles */}
         <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-primary-600/30" />
         <div className="absolute right-24 -bottom-20 w-48 h-48 rounded-full bg-court-gold/10" />
 
@@ -107,7 +101,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Stats ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map(({ label, value, icon, link, note }) => (
           <Link
@@ -126,7 +119,6 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* ── Recent cases ─────────────────────────────────────────── */}
         <div className="card lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -168,9 +160,7 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* ── Right column ─────────────────────────────────────────── */}
         <div className="space-y-6">
-          {/* Upcoming hearings */}
           <div className="card">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-court-navy">Upcoming Hearings</h2>
@@ -215,11 +205,9 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* Summary progress + case types */}
           <div className="card">
             <h2 className="text-lg font-semibold text-court-navy">Overview</h2>
 
-            {/* Summary progress bar */}
             <div className="mt-4">
               <div className="flex justify-between text-xs mb-1">
                 <span className="text-gray-600">Cases summarized</span>
@@ -230,7 +218,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Cases by category */}
             <p className="text-xs text-gray-600 mt-5 mb-2">Cases by category</p>
             {typeList.length === 0 ? (
               <p className="text-xs text-gray-400">No cases yet.</p>
@@ -251,7 +238,6 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* Cases waiting for a summary */}
             {pendingSummaries.length > 0 && (
               <>
                 <p className="text-xs text-gray-600 mt-5 mb-2">Waiting for AI summary</p>

@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext.jsx'
 import ProtectedRoute from './components/layout/ProtectedRoute.jsx'
 
-// Pages
 import Login           from './pages/Login.jsx'
 import Register        from './pages/Register.jsx'
 import Dashboard       from './pages/Dashboard.jsx'
@@ -20,11 +19,9 @@ export default function App() {
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <Routes>
-          {/* Public routes */}
           <Route path="/login"    element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Protected routes */}
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard"              element={<Dashboard />} />
             <Route path="/upload"                 element={<UploadJudgment />} />
@@ -36,10 +33,8 @@ export default function App() {
             <Route path="/profile"                element={<Profile />} />
           </Route>
 
-          {/* Root redirect */}
           <Route path="/"  element={<Navigate to="/dashboard" replace />} />
 
-          {/* 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>

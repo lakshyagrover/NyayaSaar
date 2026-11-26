@@ -3,14 +3,6 @@ import bcrypt from 'bcryptjs'
 import { verifyToken } from '../../../../lib/auth.js'
 import { prisma } from '../../../../lib/prisma.js'
 
-/**
- * POST /api/auth/change-password
- * Body: { currentPassword, newPassword }
- *
- * 1. Checks the user is logged in.
- * 2. Checks the current password is correct.
- * 3. Saves the new password (hashed with bcrypt).
- */
 export async function POST(request) {
   try {
     const tokenPayload = await verifyToken(request)

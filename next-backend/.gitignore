@@ -13,5 +13,3 @@ prisma/dev.db
 **/*.db
 **/*.sqlite
 .DS_Store
-
-.DS_Store

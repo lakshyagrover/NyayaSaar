@@ -1,10 +1,6 @@
-// Split screen used by Login and Register:
-// plum panel with the name on the left, the form on the right.
-// On a phone the panel sits above the form.
 export default function AuthLayout({ children }) {
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-court-cream">
-      {/* Left panel */}
       <div className="bg-court-navy text-white p-8 lg:p-12 flex flex-col justify-between gap-10">
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-court-gold/15 border border-court-gold/40 flex items-center justify-center text-court-gold font-serif font-bold text-xl">
@@ -26,7 +22,6 @@ export default function AuthLayout({ children }) {
         <p className="text-xs text-white/40">AI Court Judgment Summarizer for District Courts</p>
       </div>
 
-      {/* Right side: the form */}
       <div className="flex items-center justify-center p-6 lg:p-12">
         <div className="w-full max-w-sm">{children}</div>
       </div>

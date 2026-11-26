@@ -7,29 +7,19 @@ import { verifyToken } from '../../../lib/auth.js'
 import { prisma } from '../../../lib/prisma.js'
 import { saveFile, deleteFile } from '../../../lib/storage.js'
 
-// Maximum file size: 20 MB in bytes
 const MAX_FILE_SIZE = 20 * 1024 * 1024
 
 
-/**
- * POST /api/upload
- * Handles multipart/form-data upload of judgment PDFs.
- * Validates, extracts digital text via pdf-parse, saves file securely,
- * and records Case & Document in SQLite via Prisma.
- * Supports both creating new cases and attaching/updating documents for existing cases.
- */
 export async function POST(request) {
   let writtenFilePath = null
   let oldFileToDelete = null
 
   try {
-    // ── 1. Authentication ──────────────────────────────────────────────────
     const user = await verifyToken(request)
     if (!user) {
       return NextResponse.json({ message: 'Unauthorized.' }, { status: 401 })
     }
 
-    // ── 2. Parse Multipart Form Data ──────────────────────────────────────
     let formData
     try {
       formData = await request.formData()
@@ -49,12 +39,10 @@ export async function POST(request) {
     const judgmentDate = formData.get('date') || formData.get('judgmentDate')
     const caseType = formData.get('caseType')
 
-    // ── 3. File Validation ────────────────────────────────────────────────
     if (!file || typeof file === 'string') {
       return NextResponse.json({ message: 'A PDF file is required.' }, { status: 400 })
     }
 
-    // Validate file size
     if (file.size === 0) {
       return NextResponse.json({ message: 'The uploaded file is empty (0 bytes).' }, { status: 400 })
     }
@@ -66,7 +54,6 @@ export async function POST(request) {
       )
     }
 
-    // Validate MIME type & file extension
     const originalName = file.name || 'document.pdf'
     const lowerName = originalName.toLowerCase()
     if (!lowerName.endsWith('.pdf')) {
@@ -83,7 +70,6 @@ export async function POST(request) {
       )
     }
 
-    // Read buffer and check PDF magic bytes (%PDF-)
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
@@ -94,7 +80,6 @@ export async function POST(request) {
       )
     }
 
-    // ── 4. Metadata & Case Resolution ─────────────────────────────────────
     let targetCase = null
 
     if (caseId) {
@@ -126,7 +111,6 @@ export async function POST(request) {
 
       if (existingCase) {
         if (existingCase.userId === user.id) {
-          // Gracefully attach/update document for the user's existing case
           targetCase = existingCase
         } else {
           return NextResponse.json(
@@ -137,7 +121,6 @@ export async function POST(request) {
       }
     }
 
-    // Parse optional judgment date
     let parsedDate = null
     if (judgmentDate) {
       const d = new Date(judgmentDate)
@@ -146,15 +129,12 @@ export async function POST(request) {
       }
     }
 
-    // ── 5. Secure File Storage ────────────────────────────────────────────
-    // Random file name, saved online (Vercel Blob) or on the laptop (see lib/storage.js)
     const serverFileName = `${crypto.randomUUID()}.pdf`
     const storagePath = await saveFile(serverFileName, buffer)
     writtenFilePath = storagePath
 
     const sanitizedOriginalName = path.basename(originalName).replace(/[^\w.-]/g, '_')
 
-    // ── 6. PDF Text Extraction (pdf-parse) ────────────────────────────────
     let extractedText = null
     let hasExtractedText = false
     let extractionStatus = 'PENDING'
@@ -179,13 +159,11 @@ export async function POST(request) {
       extractionMessage = 'Digital text layer could not be read; marked for OCR.'
     }
 
-    // ── 7. Database Persistence (Prisma Transaction) ──────────────────────
     const [savedCase, savedDoc] = await prisma.$transaction(async (tx) => {
       let c = targetCase
       let d = null
 
       if (c) {
-        // Update existing case
         const updateData = {
           extractedText: extractedText,
           status: hasExtractedText ? 'COMPLETED' : 'PENDING',
@@ -198,7 +176,6 @@ export async function POST(request) {
 
         const existingDoc = c.documents?.[0]
         if (existingDoc) {
-          // Remember the old file - we delete it only after the database save succeeds
           if (existingDoc.storagePath && existingDoc.storagePath !== storagePath) {
             oldFileToDelete = existingDoc.storagePath
           }
@@ -242,7 +219,6 @@ export async function POST(request) {
           },
         })
       } else {
-        // Create brand new case
         const normalizedCaseNumber = caseNumber.trim()
         c = await tx.case.create({
           data: {
@@ -291,7 +267,6 @@ export async function POST(request) {
       return [c, d]
     })
 
-    // Database save worked, so now it is safe to delete the old PDF
     if (oldFileToDelete) {
       await deleteFile(oldFileToDelete)
     }

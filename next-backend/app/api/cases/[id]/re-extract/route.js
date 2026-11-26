@@ -5,14 +5,8 @@ import { verifyToken } from '../../../../../lib/auth.js'
 import { prisma } from '../../../../../lib/prisma.js'
 import { readFile } from '../../../../../lib/storage.js'
 
-/**
- * POST /api/cases/[id]/re-extract
- * Safely re-extracts digital text from an existing stored judgment PDF.
- * Updates Document and Case records without creating duplicate records or files.
- */
 export async function POST(request, { params }) {
   try {
-    // ── 1. Authentication ──────────────────────────────────────────────────
     const user = await verifyToken(request)
     if (!user) {
       return NextResponse.json({ message: 'Unauthorized.' }, { status: 401 })
@@ -23,7 +17,6 @@ export async function POST(request, { params }) {
       return NextResponse.json({ message: 'Case ID is required.' }, { status: 400 })
     }
 
-    // ── 2. Ownership verification ─────────────────────────────────────────
     const caseRecord = await prisma.case.findFirst({
       where: {
         id,
@@ -43,7 +36,6 @@ export async function POST(request, { params }) {
       )
     }
 
-    // ── 3. Find attached document ─────────────────────────────────────────
     const doc = caseRecord.documents?.[0]
     if (!doc || !doc.storagePath) {
       return NextResponse.json(
@@ -55,7 +47,6 @@ export async function POST(request, { params }) {
       )
     }
 
-    // ── 4. Verify file on disk ────────────────────────────────────────────
     const buffer = await readFile(doc.storagePath)
     if (!buffer) {
       return NextResponse.json(
@@ -87,8 +78,6 @@ export async function POST(request, { params }) {
       extractionMessage = `Text extraction failed: ${parseErr.message}. Marked for OCR.`
     }
 
-    // ── 6. Update Document and Case in SQLite (atomic transaction) ────────
-    // Note: the order here must match the order of the two updates below (document first, then case)
     const [updatedDoc, updatedCase] = await prisma.$transaction([
       prisma.document.update({
         where: { id: doc.id },

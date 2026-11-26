@@ -5,12 +5,10 @@ import api from '../services/api.js'
 export default function Profile() {
   const { user } = useAuth()
 
-  // Edit profile
   const [form, setForm] = useState({ name: user?.name || '', email: user?.email || '' })
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState(null)
 
-  // Change password
   const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
   const [pwSaving, setPwSaving] = useState(false)
   const [pwMessage, setPwMessage] = useState(null)
@@ -76,7 +74,6 @@ export default function Profile() {
         <p className="text-sm text-gray-500 mt-1">Manage your account information.</p>
       </div>
 
-      {/* Avatar */}
       <div className="card flex items-center gap-5">
         <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center text-2xl font-bold text-primary-700">
           {user?.name?.[0]?.toUpperCase() || '?'}
@@ -88,7 +85,6 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Edit form */}
       <div className="card">
         <h2 className="font-semibold text-gray-800 mb-5">Edit Profile</h2>
         <Message msg={message} />
@@ -105,12 +101,11 @@ export default function Profile() {
               required className="form-input" />
           </div>
           <button type="submit" disabled={saving} className="btn-primary">
-            {saving ? 'Saving…' : 'Save Changes'}
+            {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </form>
       </div>
 
-      {/* Change password */}
       <div className="card">
         <h2 className="font-semibold text-gray-800 mb-5">Change Password</h2>
         <Message msg={pwMessage} />
@@ -136,7 +131,7 @@ export default function Profile() {
               required autoComplete="new-password" className="form-input" />
           </div>
           <button type="submit" disabled={pwSaving} className="btn-primary">
-            {pwSaving ? 'Changing…' : 'Change Password'}
+            {pwSaving ? 'Changing...' : 'Change Password'}
           </button>
         </form>
       </div>

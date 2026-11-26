@@ -66,7 +66,7 @@ export default function UploadJudgment() {
     }
 
     setUploading(true)
-    setProcessingStep('Uploading PDF document to secure server…')
+    setProcessingStep('Uploading PDF document to secure server...')
 
     try {
       const formData = new FormData()
@@ -77,7 +77,7 @@ export default function UploadJudgment() {
       formData.append('date', form.date)
       formData.append('caseType', form.caseType)
 
-      setProcessingStep('Extracting legal judgment text with parser…')
+      setProcessingStep('Extracting legal judgment text with parser...')
 
       const res = await api.post('/upload', formData, {
         headers: {
@@ -87,9 +87,8 @@ export default function UploadJudgment() {
 
       const data = res.data
       setResult(data)
-      setProcessingStep('Completed! Redirecting to Case Details…')
+      setProcessingStep('Completed! Redirecting to Case Details...')
 
-      // Short delay so the user can see the extraction status before redirect
       setTimeout(() => {
         if (data.case?.id) {
           navigate(`/cases/${data.case.id}`)
@@ -111,7 +110,6 @@ export default function UploadJudgment() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      {/* Header */}
       <div>
         <Link to="/cases" className="text-xs text-primary-700 hover:underline">
           ← All Cases
@@ -122,7 +120,6 @@ export default function UploadJudgment() {
         </p>
       </div>
 
-      {/* Error Alert */}
       {error && (
         <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-3">
           <div className="flex-1">
@@ -135,7 +132,6 @@ export default function UploadJudgment() {
         </div>
       )}
 
-      {/* Success Alert */}
       {result && (
         <div className="p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 text-sm">
           <div className="flex items-center justify-between gap-3">
@@ -154,7 +150,6 @@ export default function UploadJudgment() {
       )}
 
       <form onSubmit={handleSubmit} className="card p-0 overflow-hidden">
-        {/* Step 1: PDF */}
         <div className="p-6 border-b border-gray-100">
           <h2 className="text-base font-semibold text-court-navy">1. Judgment PDF</h2>
           <p className="text-xs text-gray-500 mb-4">PDF only, up to {MAX_SIZE_MB} MB.</p>
@@ -190,7 +185,6 @@ export default function UploadJudgment() {
           </label>
         </div>
 
-        {/* Step 2: Case details */}
         <div className="p-6 space-y-4">
           <div>
             <h2 className="text-base font-semibold text-court-navy">2. Case Details</h2>
@@ -247,7 +241,6 @@ export default function UploadJudgment() {
           </div>
         </div>
 
-        {/* Processing Indicator */}
         {uploading && (
           <div className="mx-6 mb-4 p-3 bg-primary-50 rounded-lg border border-primary-100 flex items-center gap-3">
             <div className="w-5 h-5 border-2 border-primary-700 border-t-transparent rounded-full animate-spin shrink-0" />
@@ -255,7 +248,6 @@ export default function UploadJudgment() {
           </div>
         )}
 
-        {/* Buttons */}
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
           <button
             type="button" onClick={() => navigate('/cases')} disabled={uploading}
@@ -264,7 +256,7 @@ export default function UploadJudgment() {
             Cancel
           </button>
           <button type="submit" disabled={uploading || !file} className="btn-primary px-6">
-            {uploading ? 'Processing…' : 'Upload & Extract'}
+            {uploading ? 'Processing...' : 'Upload & Extract'}
           </button>
         </div>
       </form>
